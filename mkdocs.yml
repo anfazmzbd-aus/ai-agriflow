@@ -1,0 +1,26 @@
+site_name: AgentOS AgriFlow
+site_description: Production-ready agent framework and AgriFlow application.
+repo_name: agentos-agriflow
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.tabs
+    - content.code.copy
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+  - ADR:
+      - Bootstrap Stack: adr/0001-bootstrap-stack.md
+  - Tutorials:
+      - Getting Started: tutorials/getting-started.md
+  - API:
+      - AgentOS: api/agentos.md

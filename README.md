@@ -1,20 +1,56 @@
-# AgentOS / AgriFlow
+# AgentOS AgriFlow Platform
 
-A reusable DAG-based AI agent runtime and Sri Lankan agriculture/climate-resilience application.
+AgentOS AgriFlow is a production-oriented Python repository for building agentic workflows,
+starting with an agricultural operations application and a reusable AgentOS framework.
 
-## Handoff status
-This is a **reconstructed Codex handoff baseline**, not a copy of the original local repo. `ExecutionStatus` is implemented; the next task is `ExecutionResult[T]`. See `AGENTS.md` and `docs/handoff/STATUS.md`.
+## Version
 
-## Setup (Python 3.13+)
+Current bootstrap version: `0.1.0`.
+
+## Stack
+
+- Python 3.13
+- uv for dependency management
+- Hatchling for packaging
+- Pydantic v2 and Pydantic Settings v2
+- structlog for structured logging
+- LangGraph and LangChain Core for workflow orchestration
+- pytest, Ruff, and mypy for quality gates
+- MkDocs Material for documentation
+- Docker and GitHub Actions for deployment readiness
+
+## Quick Start
+
 ```bash
-python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
-python -m pip install -e '.[dev]'
-python -m pytest -q
-python -m ruff check .
-python -m mypy src
-python -m build
+uv sync --extra dev
+uv run pytest
+uv run ruff check .
+uv run mypy
 ```
 
-Use `python -m pip install -e ".[dev]"` in PowerShell. Do not advance to the next task without user approval.
+Run the application CLI:
+
+```bash
+uv run agriflow health
+```
+
+## Repository Layout
+
+- `src/agentos/` contains the reusable framework.
+- `apps/agriflow/` contains the AgriFlow application.
+- `examples/` contains runnable examples.
+- `tests/` contains unit, integration, and end-to-end tests.
+- `docs/` contains architecture, ADRs, tutorials, and API documentation.
+
+## Development Standards
+
+- Every Python file starts with `from __future__ import annotations`.
+- Public APIs require type hints and docstrings.
+- Production modules should have corresponding tests.
+- Architectural decisions live in `docs/adr/`.
+
+## Branching
+
+- `main` stays stable.
+- Feature branches may use names such as `feature/runtime` or `feature/event-bus`.
+- Sprint releases should be tagged as `v0.1.0`, `v0.2.0`, and onward.

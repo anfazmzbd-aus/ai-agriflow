@@ -1,0 +1,6 @@
+services:
+  agriflow:
+    build: .
+    env_file:
+      - .env.example
+    command: ["agriflow", "health"]
