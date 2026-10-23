@@ -3,8 +3,9 @@
 - Project: AgentOS framework + AgriFlow application
 - Phase: Sprint 2, Task 2.3
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
-- Current task: **2.3.2 ExecutionResult[T]** — implemented and verified, uncommitted
-- Gate: **WAITING FOR USER APPROVAL TO COMMIT TASK 2.3.2**
+- Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
+- Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
+- Gate: **Task 2.3.3 complete; wait for separate authorization for Task 2.3.4**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -68,4 +69,38 @@ corrections:
 - `tests/unit/workflows/test_workflow.py`
 
 Exclude pre-existing `AGENTS.md` and `README.md` edits. No commit has been created.
-Task 2.3.3 has not started.
+## Task 2.3.3 implementation (in progress)
+
+Reuses the existing `AgentOSError` root and `ComponentError` base. Adds runtime,
+agent, tool, model, memory, configuration, and registry domain exception types while
+preserving `WorkflowError` and keeping `RegistrationError` as a subtype of
+`RegistryError` and `ComponentError`. Added hierarchy and chaining tests and API
+documentation. No exception carries structured codes or arbitrary context; retry
+policy remains with callers. Error messages should be safe summaries and translations
+should use exception chaining.
+
+### Verification
+
+- **USER-EXECUTED VERIFICATION (Windows PowerShell):** `uv run pytest -q` — 49
+  passed in 0.44 seconds; total coverage 98.24%, above the configured 80% threshold.
+  Ruff lint, Ruff formatting, MyPy, and offline package build also passed in the
+  user's environment. The user reported no reproduced asyncio hang there.
+- **CODEX-EXECUTED VERIFICATION:** The focused exception suite passed (4 tests) with
+  `--no-cov`; Ruff lint, Ruff format check, MyPy, offline sync, and elevated offline
+  build passed. The full pytest run timed out in Codex GUI, with no full-suite result.
+  This GUI discrepancy does not reproduce in the user's PowerShell environment; its
+  root cause remains unconfirmed.
+- `uv sync --locked --extra dev --offline`: PASS; 83 locked packages audited.
+- `uv run pytest tests\\unit\\base\\test_exceptions.py --no-cov -q`: PASS; 4 passed.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 72 files formatted.
+- `uv run mypy src`: PASS; no issues in 33 source files.
+- `uv build --offline`: PASS in approved elevated run; source distribution and wheel built.
+- User-executed `uv run pytest -q` verifies the current Task 2.3.3 source: 49 passed,
+  0.44 seconds, 98.24% coverage. Codex GUI's full-suite run timed out as described
+  above; no code/config workaround was applied.
+
+Focused tests with repository coverage enabled ran 4 tests but exited at 35.43%,
+because the configured 80% threshold measures total project coverage. The focused
+suite passed with `--no-cov`; the threshold was not changed. Await user review and
+explicit commit approval. Task 2.3.4 has not started.
