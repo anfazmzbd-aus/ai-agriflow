@@ -7,6 +7,7 @@ from agentos.tools import FunctionTool, ToolResult, ToolSpec
 
 async def test_function_tool_invokes_handler() -> None:
     """FunctionTool should call its async handler."""
+
     async def handler(arguments: Mapping[str, object]) -> ToolResult:
         return ToolResult(value=arguments["name"])
 

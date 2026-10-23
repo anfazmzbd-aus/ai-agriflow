@@ -1,4 +1,5 @@
 """AgentOS framework package."""
+
 from __future__ import annotations
 
 from agentos.core.config import AgentOSSettings

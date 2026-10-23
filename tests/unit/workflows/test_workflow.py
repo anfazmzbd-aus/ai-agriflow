@@ -8,6 +8,7 @@ from agentos.workflows import SimpleWorkflow, WorkflowContext, WorkflowStep
 
 async def test_simple_workflow_runs_steps_in_order() -> None:
     """SimpleWorkflow should pass context through each step."""
+
     async def first(context: WorkflowContext) -> WorkflowContext:
         return context.with_state(first=True)
 
