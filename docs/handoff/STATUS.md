@@ -5,7 +5,8 @@
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
-- Gate: **Task 2.3.3 complete; wait for separate authorization for Task 2.3.4**
+- Current task: **2.4 BaseComponent** — implementation in progress
+- Gate: **Task 2.4 verification, then explicit approval to commit**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -69,7 +70,7 @@ corrections:
 - `tests/unit/workflows/test_workflow.py`
 
 Exclude pre-existing `AGENTS.md` and `README.md` edits. No commit has been created.
-## Task 2.3.3 implementation (in progress)
+## Task 2.3.3 implementation
 
 Reuses the existing `AgentOSError` root and `ComponentError` base. Adds runtime,
 agent, tool, model, memory, configuration, and registry domain exception types while
@@ -103,4 +104,38 @@ should use exception chaining.
 Focused tests with repository coverage enabled ran 4 tests but exited at 35.43%,
 because the configured 80% threshold measures total project coverage. The focused
 suite passed with `--no-cov`; the threshold was not changed. Await user review and
-explicit commit approval. Task 2.3.4 has not started.
+explicit commit approval. Task 2.4 has not started.
+
+## Task 2.4 implementation (verified; awaiting commit approval)
+
+The approved scope preserves the abstract `Component` interface and adds concrete
+`BaseComponent(Component)` with validated, exact-preservation, read-only names. No
+lifecycle, event, registry, or runtime operations are included. Implementation and
+tests were added; existing `Component` subclasses remain valid.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages resolved/audited.
+- `uv run pytest tests/unit/base/test_component.py -q --no-cov`: PASS; 12 passed
+  (initial run 0.16s; rerun after lint fixes 0.12s).
+- `uv run pytest -q`: stalled in Codex GUI for over 60 seconds and was interrupted;
+  no full-suite count or coverage is available from this environment.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 72 files checked.
+- `uv run mypy src`: PASS; no issues in 33 source files.
+- `uv build --offline`: PASS in approved elevated run; source distribution and wheel built.
+
+### USER-EXECUTED VERIFICATION (Windows PowerShell)
+
+The user ran the complete suite against the current Task 2.4 working tree using
+Python 3.14.0 and the uv-managed environment:
+
+- `uv run pytest -q`: PASS; 60 passed in 0.50 seconds.
+- Repository coverage: 98.31%, above the configured 80% threshold.
+- `BaseComponent` module coverage: 100%.
+- Ruff lint, Ruff formatting, MyPy, locked uv sync, and offline package build: PASS.
+- Codex focused `test_component.py`: 12 passed.
+
+The Codex GUI full-suite timeout remains an unresolved execution-environment
+discrepancy; the user did not reproduce it in PowerShell. No asyncio, Python-version,
+test, or coverage workaround was made. Task 2.5 has not started.

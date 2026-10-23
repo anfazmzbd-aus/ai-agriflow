@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from agentos.base.component import Component
+from agentos.base.component import BaseComponent, Component
 from agentos.base.exceptions import (
     AgentError,
     AgentOSError,
@@ -20,6 +20,7 @@ __all__ = [
     "AgentOSError",
     "AgentOSMemoryError",
     "AgentOSRuntimeError",
+    "BaseComponent",
     "Component",
     "ComponentError",
     "ConfigurationError",

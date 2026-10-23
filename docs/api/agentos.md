@@ -16,6 +16,12 @@ and derives from `RegistryError`. When translating a lower-level exception, use
 `raise DomainError("safe summary") from exc` to retain the original cause. Keep
 credentials and secret values out of exception messages.
 
+`agentos.base.Component` remains the abstract component interface.
+`agentos.base.BaseComponent` is a concrete implementation that accepts a stable
+name at construction. Names must be strings containing at least one non-whitespace
+character; valid names are preserved as supplied and exposed through a read-only
+property. Lifecycle operations are defined separately from component identity.
+
 ::: agentos
 
 ::: agentos.core
