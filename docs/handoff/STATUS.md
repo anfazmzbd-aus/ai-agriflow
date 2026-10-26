@@ -139,3 +139,31 @@ Python 3.14.0 and the uv-managed environment:
 The Codex GUI full-suite timeout remains an unresolved execution-environment
 discrepancy; the user did not reproduce it in PowerShell. No asyncio, Python-version,
 test, or coverage workaround was made. Task 2.5 has not started.
+
+## Landing page publication to GitHub — 2026-10-26
+
+User explicitly requested pushing the previously created landing page to GitHub.
+Integrated it as standalone `landing-page/` on top of current `main`, preserving
+all Python framework/application sources and existing Git history. This is separate
+from the numbered framework tasks; no next framework task was started.
+
+Acceptance: preserve existing project, reproduce the frontend build, verify the
+landing-page interactions and graphics, and push the approved page to GitHub.
+Includes local SVG artwork, responsive styling, agent/project dialogs, dependency
+lockfile, and usage instructions. Live AI services and public website deployment
+are not included. Google Fonts is optional with a sans-serif fallback.
+
+Current cloud verification (all exit 0):
+- `cd landing-page && npm ci --cache /workspace/.npm-cache --no-audit --no-fund`.
+- `cd landing-page && npm run build` — Vite 6.4.5 production build passed.
+- Headless Chromium via temporary Playwright runner: all three agent dialogs,
+  project dialog, mobile menu, images, and overflow checks at widths 375/768/1440
+  passed; no JavaScript errors. Runner was outside the checkout.
+- `UV_CACHE_DIR=/workspace/.uv-cache uv sync --locked --extra dev`.
+- `UV_CACHE_DIR=/workspace/.uv-cache uv run pytest -q` — 60 passed, 98.31% coverage.
+- `UV_CACHE_DIR=/workspace/.uv-cache uv run ruff check .` — passed.
+- `UV_CACHE_DIR=/workspace/.uv-cache uv run ruff format --check .` — 73 files passed.
+- `UV_CACHE_DIR=/workspace/.uv-cache uv run mypy src` — 33 source files passed.
+
+Only the landing-page files and this evidence entry are included in this change.
+No credentials or generated build/dependency directories are included.
