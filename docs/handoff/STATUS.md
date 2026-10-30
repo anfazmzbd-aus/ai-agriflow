@@ -6,8 +6,9 @@
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
 - Completed task: **2.4 BaseComponent** — committed as `7338f51`; user-verified
-- Current task: **2.5 Lifecycle Contracts** — verified on `feat/2.5-lifecycle`; awaiting commit approval
-- Gate: **Task 2.5 complete after explicit approval and commit; Task 2.6 needs separate authorization**
+- Completed task: **2.5 Lifecycle Contracts** — committed as `980dbc3f63bfd518d4c10e56d28b0347f8b52b6a`, pushed to `origin/feat/2.5-lifecycle`, and user-verified
+- Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — awaiting review and merge
+- Gate: **Task 2.6 requires separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -141,7 +142,7 @@ The Codex GUI full-suite timeout remains an unresolved execution-environment
 discrepancy; the user did not reproduce it in PowerShell. No asyncio, Python-version,
 test, or coverage workaround was made. Task 2.5 work is recorded below.
 
-## Task 2.5 implementation (verified; awaiting commit approval)
+## Task 2.5 implementation (committed, pushed, and user-verified)
 
 Branch setup: fetched `origin`, created local `feat/2.5-lifecycle` tracking
 `origin/feat/2.5-lifecycle`, and verified Task 2.4 commit `7338f51c2137e6e73ae2a3b9c90fbacb42ac490a`
@@ -191,10 +192,14 @@ The user ran the full verification suite on branch `feat/2.5-lifecycle`:
 Codex GUI execution of focused/full async tests and offline build did not complete;
 those outcomes remain an unresolved environment discrepancy and are recorded
 separately above. User-executed results supersede the GUI timeout for this source
-revision. Task 2.5 is verified and awaits explicit commit approval. The correct
-checkpoint is branch `feat/2.5-lifecycle`, based on `ed55b65`; Task 2.4 remains
-committed as `7338f51`. No Task 2.5 files have been committed. Task 2.6 has not
-started and requires separate authorization.
+revision. Task 2.5 was committed as
+`980dbc3f63bfd518d4c10e56d28b0347f8b52b6a` and pushed to
+`origin/feat/2.5-lifecycle`. Draft PR #1 targets `main` and is awaiting review and
+merge. The correct branch checkpoint is `feat/2.5-lifecycle`, based on `ed55b65`;
+Task 2.4 remains committed as `7338f51`. Task 2.6 has not started and requires
+separate authorization. The Codex GUI async-test/build timeout remains an
+unresolved execution-environment discrepancy; user-executed Windows PowerShell
+results above are recorded separately and were successful.
 
 ## Landing page publication to GitHub — 2026-10-26
 

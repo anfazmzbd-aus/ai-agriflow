@@ -6,7 +6,7 @@
 | 2.3.2 | Generic ExecutionResult[T], invariants, factories, tests and exports | Committed `9c79638`; user-verified | Complete |
 | 2.3.3 | Core exception hierarchy | Committed; user-verified | Complete |
 | 2.4 | BaseComponent | Committed `7338f51`; user-verified | Complete |
-| 2.5 | Lifecycle contracts | Verified; user-executed full suite | Explicit approval to commit |
+| 2.5 | Lifecycle contracts | Committed `980dbc3`; pushed; user-verified | PR #1 awaiting review and merge |
 | 2.6 | BaseAgent | Planned | Task-by-task approval |
 | 2.7 | Event system | Planned | Task-by-task approval |
 | 2.8 | Service container | Planned | Task-by-task approval |
