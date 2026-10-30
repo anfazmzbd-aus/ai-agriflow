@@ -102,7 +102,10 @@ class LifecycleComponent(BaseComponent, ABC):
         self._lifecycle_owner = asyncio.current_task()
         try:
             await hook()
-        except BaseException:
+        except asyncio.CancelledError:
+            self._lifecycle_state = LifecycleState.FAILED
+            raise
+        except Exception:
             self._lifecycle_state = LifecycleState.FAILED
             raise
         finally:

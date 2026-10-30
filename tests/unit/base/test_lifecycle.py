@@ -135,6 +135,38 @@ async def test_hook_failure_marks_failed_and_propagates_original_exception(
 
     assert captured.value is expected
     assert component.lifecycle_state is LifecycleState.FAILED
+    traceback_names: list[str] = []
+    traceback = captured.value.__traceback__
+    while traceback is not None:
+        traceback_names.append(traceback.tb_frame.f_code.co_name)
+        traceback = traceback.tb_next
+    assert "fail" in traceback_names
+
+
+@pytest.mark.parametrize("exception_type", [KeyboardInterrupt, SystemExit])
+@pytest.mark.asyncio
+async def test_process_control_exceptions_propagate_without_marking_failed(
+    exception_type: type[BaseException],
+) -> None:
+    """Process-control exceptions escape unchanged and leave state untouched."""
+    component = ProbeLifecycle()
+    expected = exception_type("stop requested")
+
+    async def interrupt() -> None:
+        raise expected
+
+    component.initialize_action = interrupt
+    with pytest.raises(exception_type) as captured:
+        await component.initialize()
+
+    assert captured.value is expected
+    assert component.lifecycle_state is LifecycleState.NEW
+    traceback_names: list[str] = []
+    traceback = captured.value.__traceback__
+    while traceback is not None:
+        traceback_names.append(traceback.tb_frame.f_code.co_name)
+        traceback = traceback.tb_next
+    assert "interrupt" in traceback_names
 
 
 @pytest.mark.asyncio

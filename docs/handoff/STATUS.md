@@ -201,6 +201,34 @@ separate authorization. The Codex GUI async-test/build timeout remains an
 unresolved execution-environment discrepancy; user-executed Windows PowerShell
 results above are recorded separately and were successful.
 
+### PR #1 exception-handling review correction
+
+Changed `_invoke_hook()` to handle `asyncio.CancelledError` and ordinary
+`Exception` explicitly. Both mark the lifecycle state `FAILED` and propagate the
+original exception with its traceback. `KeyboardInterrupt` and `SystemExit` now
+propagate without being caught or changing lifecycle state. Regression tests cover
+exception identity, traceback preservation, and unchanged state for process-control
+exceptions. API documentation describes this behavior. No lifecycle transition,
+public API, dependency, or unrelated working-tree files were changed.
+
+**Codex-executed verification for this correction:**
+
+- `uv sync --locked --extra dev`: PASS; 83 packages audited.
+- `uv run pytest tests/unit/base/test_lifecycle.py -q --no-cov`: PASS; 20 passed
+  in 0.16 seconds.
+- `uv run pytest -q`: PASS; 80 passed in 0.53 seconds; total coverage 98.21%,
+  above the 80% threshold.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 76 files already formatted.
+- `uv run mypy src`: PASS; no issues in 34 source files.
+- `uv build --offline`: PASS; source distribution and wheel built.
+
+The earlier Codex GUI asyncio timeout remains an unresolved discrepancy with an
+unconfirmed root cause; the verification commands above completed successfully in
+this run. This correction is recorded in the commit history of
+`feat/2.5-lifecycle` and pushed to `origin/feat/2.5-lifecycle`; PR #1 includes the
+updated branch.
+
 ## Landing page publication to GitHub — 2026-10-26
 
 User explicitly requested pushing the previously created landing page to GitHub.

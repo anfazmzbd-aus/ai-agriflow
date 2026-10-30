@@ -46,10 +46,12 @@ without invoking cleanup. A failed or cancelled hook leaves the component failed
 
 Starting before initialization, initializing a started component, or initializing/
 starting a stopped or failed component raises `AgentOSRuntimeError` without changing
-state. Any hook exception or cancellation marks the component failed and is re-raised.
-Cancellation while waiting for the transition lock has no state effect. After a hook
-returns, the state update runs synchronously with no intervening await, so cancellation
-cannot arrive in the gap between hook success and that transition being recorded.
+state. An ordinary hook exception or cancellation marks the component failed and is
+re-raised unchanged. `KeyboardInterrupt` and `SystemExit` propagate without being
+caught or changing lifecycle state. Cancellation while waiting for the transition
+lock has no state effect. After a hook returns, the state update runs synchronously
+with no intervening await, so cancellation cannot arrive in the gap between hook
+success and that transition being recorded.
 
 The states are `NEW`, `INITIALIZED`, `STARTED`, `STOPPED`, and `FAILED`. Stopped is
 terminal: components cannot restart. Lifecycle hooks return `None`; operation
