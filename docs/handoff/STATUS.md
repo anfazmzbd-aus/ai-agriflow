@@ -1,12 +1,13 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.3
+- Phase: Sprint 2, Task 2.5
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
-- Current task: **2.4 BaseComponent** — implementation in progress
-- Gate: **Task 2.4 verification, then explicit approval to commit**
+- Completed task: **2.4 BaseComponent** — committed as `7338f51`; user-verified
+- Current task: **2.5 Lifecycle Contracts** — verified on `feat/2.5-lifecycle`; awaiting commit approval
+- Gate: **Task 2.5 complete after explicit approval and commit; Task 2.6 needs separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -138,7 +139,62 @@ Python 3.14.0 and the uv-managed environment:
 
 The Codex GUI full-suite timeout remains an unresolved execution-environment
 discrepancy; the user did not reproduce it in PowerShell. No asyncio, Python-version,
-test, or coverage workaround was made. Task 2.5 has not started.
+test, or coverage workaround was made. Task 2.5 work is recorded below.
+
+## Task 2.5 implementation (verified; awaiting commit approval)
+
+Branch setup: fetched `origin`, created local `feat/2.5-lifecycle` tracking
+`origin/feat/2.5-lifecycle`, and verified Task 2.4 commit `7338f51c2137e6e73ae2a3b9c90fbacb42ac490a`
+is an ancestor. The branch begins at `ed55b65` (`frontend : landing page updates`);
+the intervening frontend commits did not modify lifecycle files. Existing edits to
+`.gitignore`, `AGENTS.md`, `README.md`, and `pyproject.toml` were preserved.
+
+Implemented an opt-in `LifecycleComponent(BaseComponent)` and `LifecycleState` with
+serialized async initialize/start/stop methods, idempotent repeated calls, explicit
+invalid-transition errors, failure/cancellation propagation, cleanup retry from
+FAILED, and same-task reentrancy protection. `Component` and `BaseComponent` remain
+unchanged. Lifecycle methods return `None`; no manager or runtime orchestration was
+added. Documentation and deterministic tests are included.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages resolved/audited.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 76 files formatted.
+- `uv run mypy src`: PASS; no issues in 34 source files.
+- `uv run pytest tests/unit/base/test_lifecycle.py -q --no-cov`: GUI execution
+  stalled before reporting the first test; interrupted. The verbose run collected
+  17 cases before the final additional case was added, then stalled at the first.
+- `uv run pytest -q`: GUI execution stalled with no output for 25 seconds; interrupted.
+- `uv build --offline`: attempted with approved elevated access; did not complete
+  within the GUI call and was interrupted.
+
+The async test/build stalls are unresolved Codex GUI execution-environment
+discrepancies. No event-loop, Python, test, dependency, or coverage configuration
+workaround was introduced.
+
+### USER-EXECUTED VERIFICATION (Windows PowerShell)
+
+The user ran the full verification suite on branch `feat/2.5-lifecycle`:
+
+- `uv sync --locked --extra dev`: PASS; 83 packages.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 76 files.
+- `uv run mypy src`: PASS; 34 source files.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- `uv run pytest tests/unit/base/test_lifecycle.py -q --no-cov`: PASS; 18 passed
+  in 0.16 seconds.
+- `uv run pytest -q`: PASS; 78 passed in 0.47 seconds.
+- Repository coverage: 98.20%, above the 80% threshold; lifecycle module coverage
+  approximately 98%.
+
+Codex GUI execution of focused/full async tests and offline build did not complete;
+those outcomes remain an unresolved environment discrepancy and are recorded
+separately above. User-executed results supersede the GUI timeout for this source
+revision. Task 2.5 is verified and awaits explicit commit approval. The correct
+checkpoint is branch `feat/2.5-lifecycle`, based on `ed55b65`; Task 2.4 remains
+committed as `7338f51`. No Task 2.5 files have been committed. Task 2.6 has not
+started and requires separate authorization.
 
 ## Landing page publication to GitHub — 2026-10-26
 
