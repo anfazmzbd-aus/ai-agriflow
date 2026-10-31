@@ -1,14 +1,15 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.5
+- Phase: Sprint 2, Task 2.6
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
 - Completed task: **2.4 BaseComponent** — committed as `7338f51`; user-verified
-- Completed task: **2.5 Lifecycle Contracts** — committed as `980dbc3f63bfd518d4c10e56d28b0347f8b52b6a`, pushed to `origin/feat/2.5-lifecycle`, and user-verified
-- Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — awaiting review and merge
-- Gate: **Task 2.6 requires separate authorization**
+- Completed task: **2.5 Lifecycle Contracts** — user-verified and merged into `main` as `57f9383b83c65062fd04f889dcb141af5e207c66`
+- Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — merged; GitHub Actions CI passed before merge
+- Current task: **2.6 BaseAgent** — implemented and verified on `feat/2.6-base-agent`; awaiting commit approval
+- Gate: **Task 2.6 requires explicit commit approval; Task 2.7 needs separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -142,7 +143,7 @@ The Codex GUI full-suite timeout remains an unresolved execution-environment
 discrepancy; the user did not reproduce it in PowerShell. No asyncio, Python-version,
 test, or coverage workaround was made. Task 2.5 work is recorded below.
 
-## Task 2.5 implementation (committed, pushed, and user-verified)
+## Task 2.5 implementation (committed, pushed, user-verified, and merged)
 
 Branch setup: fetched `origin`, created local `feat/2.5-lifecycle` tracking
 `origin/feat/2.5-lifecycle`, and verified Task 2.4 commit `7338f51c2137e6e73ae2a3b9c90fbacb42ac490a`
@@ -194,10 +195,12 @@ those outcomes remain an unresolved environment discrepancy and are recorded
 separately above. User-executed results supersede the GUI timeout for this source
 revision. Task 2.5 was committed as
 `980dbc3f63bfd518d4c10e56d28b0347f8b52b6a` and pushed to
-`origin/feat/2.5-lifecycle`. Draft PR #1 targets `main` and is awaiting review and
-merge. The correct branch checkpoint is `feat/2.5-lifecycle`, based on `ed55b65`;
-Task 2.4 remains committed as `7338f51`. Task 2.6 has not started and requires
-separate authorization. The Codex GUI async-test/build timeout remains an
+`origin/feat/2.5-lifecycle`. PR #1 targeted `main` and has been merged. GitHub
+merged PR #1 into `main` as
+`57f9383b83c65062fd04f889dcb141af5e207c66`; GitHub Actions CI passed before merge.
+The local `main` branch has been fast-forwarded to `origin/main` at that merge
+commit. Task 2.4 remains committed as `7338f51`. Task 2.6 implementation is recorded
+below; Task 2.7 requires separate authorization. The Codex GUI async-test/build timeout remains an
 unresolved execution-environment discrepancy; user-executed Windows PowerShell
 results above are recorded separately and were successful.
 
@@ -226,8 +229,36 @@ public API, dependency, or unrelated working-tree files were changed.
 The earlier Codex GUI asyncio timeout remains an unresolved discrepancy with an
 unconfirmed root cause; the verification commands above completed successfully in
 this run. This correction is recorded in the commit history of
-`feat/2.5-lifecycle` and pushed to `origin/feat/2.5-lifecycle`; PR #1 includes the
-updated branch.
+`feat/2.5-lifecycle` and was included in PR #1, which has merged into `main`.
+
+## Task 2.6 implementation (verified; awaiting commit approval)
+
+Added generic `BaseAgent[InputT, OutputT]` as a public `LifecycleComponent` subclass
+with default no-op lifecycle hooks and abstract `_execute`. `run()` admits work only
+while STARTED, returns the raw typed value, passes through `AgentError` and
+control-flow exceptions, and wraps unexpected ordinary errors with a safe message
+and chained cause. It does not retry or impose a timeout. The existing `Agent`
+protocol, `AgentContext`, `AgentResult`, and `EchoAgent` are unchanged. The run-state
+check is only an admission check: shutdown may complete while execution is awaiting.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages audited.
+- `uv run pytest tests/unit/agents/test_agent.py -q --no-cov`: PASS; 18 passed.
+- `uv run pytest -q`: PASS; 97 passed; total coverage 98.30%, above the 80%
+  threshold. `src/agentos/agents/base_agent.py` has 100% statement coverage.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 77 files formatted.
+- `uv run mypy src`: PASS; no issues in 35 source files.
+- `uv run mypy tests/unit/agents/test_agent.py`: PASS; checked the protocol
+  assignment example in 1 source file.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- `git diff --check` on the Task 2.6 files: PASS.
+
+All Task 2.6 verification above completed in the Codex environment; no user-executed
+verification was needed. The prior Task 2.5 GUI timeout remains documented as a
+historical discrepancy with an unconfirmed cause. Task 2.6 is uncommitted and awaits
+explicit approval. Task 2.7 has not started.
 
 ## Landing page publication to GitHub — 2026-10-26
 
