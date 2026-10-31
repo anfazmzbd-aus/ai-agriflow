@@ -8,8 +8,9 @@
 - Completed task: **2.4 BaseComponent** — committed as `7338f51`; user-verified
 - Completed task: **2.5 Lifecycle Contracts** — user-verified and merged into `main` as `57f9383b83c65062fd04f889dcb141af5e207c66`
 - Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — merged; GitHub Actions CI passed before merge
-- Current task: **2.6 BaseAgent** — implemented and verified on `feat/2.6-base-agent`; awaiting commit approval
-- Gate: **Task 2.6 requires explicit commit approval; Task 2.7 needs separate authorization**
+- Completed task: **2.6 BaseAgent** — committed as `3a2da6d8a4f2e8fb51f8e577126b47efba015bbf`, pushed, and verified
+- Pull request: **#2** (`feat/2.6-base-agent` → `main`) — draft; awaiting final review and merge
+- Gate: **Task 2.7 needs separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -231,7 +232,7 @@ unconfirmed root cause; the verification commands above completed successfully i
 this run. This correction is recorded in the commit history of
 `feat/2.5-lifecycle` and was included in PR #1, which has merged into `main`.
 
-## Task 2.6 implementation (verified; awaiting commit approval)
+## Task 2.6 implementation (committed, pushed, and verified)
 
 Added generic `BaseAgent[InputT, OutputT]` as a public `LifecycleComponent` subclass
 with default no-op lifecycle hooks and abstract `_execute`. `run()` admits work only
@@ -257,8 +258,10 @@ check is only an admission check: shutdown may complete while execution is await
 
 All Task 2.6 verification above completed in the Codex environment; no user-executed
 verification was needed. The prior Task 2.5 GUI timeout remains documented as a
-historical discrepancy with an unconfirmed cause. Task 2.6 is uncommitted and awaits
-explicit approval. Task 2.7 has not started.
+historical discrepancy with an unconfirmed cause. Task 2.6 was committed as
+`3a2da6d8a4f2e8fb51f8e577126b47efba015bbf` and pushed to
+`origin/feat/2.6-base-agent`. Draft PR #2 targets `main` and awaits final review and
+merge. Task 2.7 has not started and requires separate authorization.
 
 ## Landing page publication to GitHub — 2026-10-26
 
