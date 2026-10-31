@@ -59,6 +59,24 @@ outcomes continue to use `ExecutionResult[T]` where appropriate. This contract d
 not discover components or coordinate startup order; those concerns belong to a
 future component manager/runtime integration.
 
+### Base agents
+
+`agentos.agents.BaseAgent[InputT, OutputT]` is an abstract, lifecycle-aware base for
+typed asynchronous agents. Implement `_execute(input)` and override lifecycle hooks
+only when resource setup or cleanup is needed. The default hooks are no-ops. Call
+`initialize()` and `start()` before `run(input)`; calls to `run()` outside `STARTED`
+raise `AgentOSRuntimeError` before execution. Successful calls return the raw typed
+output. `AgentError` propagates unchanged; unexpected ordinary exceptions become a
+safe `AgentError` chained from the original. Cancellation, `TimeoutError`,
+`KeyboardInterrupt`, and `SystemExit` propagate unchanged. No retry or timeout is
+performed internally.
+
+The started-state check is an admission check only. A concurrent `stop()` may finish
+while `_execute()` is still awaiting; the in-flight call may then complete while the
+agent state is `STOPPED`. Execution does not mutate lifecycle state. A
+`BaseAgent[AgentContext, AgentResult]` specialization is structurally compatible with
+the existing `Agent` protocol; `EchoAgent` and the protocol itself are unchanged.
+
 ::: agentos
 
 ::: agentos.core
