@@ -14,6 +14,7 @@ from agentos.base.exceptions import (
     ToolError,
     WorkflowError,
 )
+from agentos.base.lifecycle import LifecycleComponent, LifecycleState
 
 __all__ = [
     "AgentError",
@@ -24,6 +25,8 @@ __all__ = [
     "Component",
     "ComponentError",
     "ConfigurationError",
+    "LifecycleComponent",
+    "LifecycleState",
     "ModelError",
     "RegistrationError",
     "RegistryError",

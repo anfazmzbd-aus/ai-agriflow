@@ -22,6 +22,43 @@ name at construction. Names must be strings containing at least one non-whitespa
 character; valid names are preserved as supplied and exposed through a read-only
 property. Lifecycle operations are defined separately from component identity.
 
+### Lifecycle components
+
+`agentos.base.LifecycleComponent` is an opt-in asynchronous base for components that
+own resources. Implement `_initialize()`, `_start()`, and `_stop()` hooks; call
+`initialize()`, `start()`, and `stop()` to run them. Hooks must not recursively call
+the public lifecycle methods. Per-instance synchronization serializes concurrent
+calls. Repeated initialization while initialized, start while started, and stop
+while stopped are no-ops. Stopping a new component moves it directly to stopped
+without invoking cleanup. A failed or cancelled hook leaves the component failed;
+`stop()` can then retry cleanup. The original exception or cancellation propagates.
+
+| Current state | Call | Resulting state | Hook |
+| --- | --- | --- | --- |
+| `NEW` | `initialize()` | `INITIALIZED` | `_initialize()` |
+| `INITIALIZED` | `initialize()` | `INITIALIZED` | none |
+| `INITIALIZED` | `start()` | `STARTED` | `_start()` |
+| `STARTED` | `start()` | `STARTED` | none |
+| `NEW` | `stop()` | `STOPPED` | none |
+| `INITIALIZED` or `STARTED` | `stop()` | `STOPPED` | `_stop()` |
+| `STOPPED` | `stop()` | `STOPPED` | none |
+| `FAILED` | `stop()` | `STOPPED` on success; otherwise `FAILED` | `_stop()` |
+
+Starting before initialization, initializing a started component, or initializing/
+starting a stopped or failed component raises `AgentOSRuntimeError` without changing
+state. An ordinary hook exception or cancellation marks the component failed and is
+re-raised unchanged. `KeyboardInterrupt` and `SystemExit` propagate without being
+caught or changing lifecycle state. Cancellation while waiting for the transition
+lock has no state effect. After a hook returns, the state update runs synchronously
+with no intervening await, so cancellation cannot arrive in the gap between hook
+success and that transition being recorded.
+
+The states are `NEW`, `INITIALIZED`, `STARTED`, `STOPPED`, and `FAILED`. Stopped is
+terminal: components cannot restart. Lifecycle hooks return `None`; operation
+outcomes continue to use `ExecutionResult[T]` where appropriate. This contract does
+not discover components or coordinate startup order; those concerns belong to a
+future component manager/runtime integration.
+
 ::: agentos
 
 ::: agentos.core

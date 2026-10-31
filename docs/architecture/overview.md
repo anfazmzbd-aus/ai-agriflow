@@ -12,6 +12,8 @@ reshaping the repository.
 ## Sprint 2 Components
 
 - `base` defines common component contracts and framework exceptions.
+- `base.lifecycle` provides an opt-in asynchronous lifecycle contract; identity-only
+  components remain lifecycle-free.
 - `events` provides an asynchronous in-process event bus.
 - `registry` provides name-addressable component registration.
 - `tools` wraps asynchronous Python callables as AgentOS tools.
@@ -22,3 +24,11 @@ reshaping the repository.
 - `adapters` defines the LangGraph adapter boundary.
 - `telemetry` records structured runtime events.
 - `runtime` composes settings, events, registry, and telemetry.
+
+## Component lifecycle boundary
+
+`Component` and `BaseComponent` define identity only. Components that acquire
+resources can opt into `LifecycleComponent`, whose per-instance lock serializes
+initialize/start/stop transitions and whose hooks report failure by raising. It does
+not perform discovery, dependency ordering, or cross-component coordination. A
+future component manager or runtime can build those capabilities around the contract.
