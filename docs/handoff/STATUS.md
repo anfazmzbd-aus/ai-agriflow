@@ -10,8 +10,9 @@
 - Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — merged; GitHub Actions CI passed before merge
 - Completed task: **2.6 BaseAgent** — verified and merged into `main` as `c34c19b5fe592daa3dd26c1de1bf269c38360bee`
 - Pull request: **#2** (`feat/2.6-base-agent` → `main`) — merged; standard merge commit
-- Current task: **2.7 Event System** — implemented and verified on `feat/2.7-event-system`; awaiting commit approval
-- Gate: **Task 2.7 requires explicit commit approval; Task 2.8 needs separate authorization**
+- Completed task: **2.7 Event System** — committed as `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to `origin/feat/2.7-event-system`
+- Pull request: **#3** (`feat/2.7-event-system` → `main`) — draft; awaiting final review and merge
+- Gate: **Task 2.8 requires separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -265,7 +266,7 @@ historical discrepancy with an unconfirmed cause. Task 2.6 was committed as
 `c34c19b5fe592daa3dd26c1de1bf269c38360bee`. The Task 2.7 feature branch is based
 on that merge commit. Task 2.8 has not started and requires separate authorization.
 
-## Task 2.7 implementation (verified; awaiting commit approval)
+## Task 2.7 implementation (committed, pushed, and verified; PR #3 awaiting review and merge)
 
 Refined the in-process `EventBus` with input validation, `unsubscribe()`,
 side-effect-free counts, sequential exact-before-wildcard dispatch, registration
@@ -297,9 +298,12 @@ information is preserved. The unrelated edits to `.gitignore`, `AGENTS.md`,
 
 All checks were Codex-executed; no user-executed verification was needed. The
 existing pre-Task-2.7 handoff edits documenting Task 2.6's merge were preserved and
-reconciled above. The four unrelated local modifications and `uv.lock` remain
-unchanged. Task 2.7 is uncommitted and awaits explicit approval. Task 2.8 has not
-started.
+reconciled above. Task 2.7 was committed as
+`45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to
+`origin/feat/2.7-event-system`. Draft PR #3 targets `main` and awaits final review
+and merge. The documented concurrency limitation remains that independent publishes
+may interleave; event instances and payloads remain mutable. Task 2.8 has not started
+and requires separate authorization.
 
 ## Landing page publication to GitHub — 2026-10-26
 

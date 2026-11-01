@@ -8,7 +8,7 @@
 | 2.4 | BaseComponent | Committed `7338f51`; user-verified | Complete |
 | 2.5 | Lifecycle contracts | User-verified; merged as `57f9383` | Complete |
 | 2.6 | BaseAgent | Verified; merged as `c34c19b` | Complete |
-| 2.7 | Event system | Verified; awaiting commit approval | Explicit approval to commit |
+| 2.7 | Event system | Committed `45482d4`; pushed; verified | PR #3 awaiting final review and merge |
 | 2.8 | Service container | Planned | Task-by-task approval |
 | 2.9 | Component manager | Planned | Task-by-task approval |
 | 2.10 | Runtime | Planned | Task-by-task approval |
