@@ -1,16 +1,18 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.6
+- Phase: Sprint 2, Task 2.7
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
 - Completed task: **2.4 BaseComponent** — committed as `7338f51`; user-verified
 - Completed task: **2.5 Lifecycle Contracts** — user-verified and merged into `main` as `57f9383b83c65062fd04f889dcb141af5e207c66`
 - Pull request: **#1** (`feat/2.5-lifecycle` → `main`) — merged; GitHub Actions CI passed before merge
-- Completed task: **2.6 BaseAgent** — committed as `3a2da6d8a4f2e8fb51f8e577126b47efba015bbf`, pushed, and verified
-- Pull request: **#2** (`feat/2.6-base-agent` → `main`) — draft; awaiting final review and merge
-- Gate: **Task 2.7 needs separate authorization**
+- Completed task: **2.6 BaseAgent** — verified and merged into `main` as `c34c19b5fe592daa3dd26c1de1bf269c38360bee`
+- Pull request: **#2** (`feat/2.6-base-agent` → `main`) — merged; standard merge commit
+- Completed task: **2.7 Event System** — committed as `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to `origin/feat/2.7-event-system`
+- Pull request: **#3** (`feat/2.7-event-system` → `main`) — draft; awaiting final review and merge
+- Gate: **Task 2.8 requires separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -232,7 +234,7 @@ unconfirmed root cause; the verification commands above completed successfully i
 this run. This correction is recorded in the commit history of
 `feat/2.5-lifecycle` and was included in PR #1, which has merged into `main`.
 
-## Task 2.6 implementation (committed, pushed, and verified)
+## Task 2.6 implementation (committed, pushed, verified, and merged)
 
 Added generic `BaseAgent[InputT, OutputT]` as a public `LifecycleComponent` subclass
 with default no-op lifecycle hooks and abstract `_execute`. `run()` admits work only
@@ -260,8 +262,48 @@ All Task 2.6 verification above completed in the Codex environment; no user-exec
 verification was needed. The prior Task 2.5 GUI timeout remains documented as a
 historical discrepancy with an unconfirmed cause. Task 2.6 was committed as
 `3a2da6d8a4f2e8fb51f8e577126b47efba015bbf` and pushed to
-`origin/feat/2.6-base-agent`. Draft PR #2 targets `main` and awaits final review and
-merge. Task 2.7 has not started and requires separate authorization.
+`origin/feat/2.6-base-agent`. GitHub merged PR #2 into `main` as
+`c34c19b5fe592daa3dd26c1de1bf269c38360bee`. The Task 2.7 feature branch is based
+on that merge commit. Task 2.8 has not started and requires separate authorization.
+
+## Task 2.7 implementation (committed, pushed, and verified; PR #3 awaiting review and merge)
+
+Refined the in-process `EventBus` with input validation, `unsubscribe()`,
+side-effect-free counts, sequential exact-before-wildcard dispatch, registration
+snapshots, and explicit failure/cancellation behavior. Duplicate registrations
+remain independent and unsubscription removes one equal registration. The `Event`
+model retains its existing fields and mutability while rejecting blank event types;
+payloads remain mutable in-process Python mappings. External brokers, persistence,
+retries, background workers, and serialization are out of scope.
+
+Before Task 2.7, the unstaged `STATUS.md` and `TASKS.md` changes recorded Task 2.6's
+merge into `main` at `c34c19b5fe592daa3dd26c1de1bf269c38360bee`. That handoff
+information is preserved. The unrelated edits to `.gitignore`, `AGENTS.md`,
+`README.md`, and `pyproject.toml` are also preserved; `uv.lock` is unchanged.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages audited.
+- `uv run pytest tests/unit/events -q --no-cov`: PASS; 20 passed in 0.13 seconds.
+- `uv run pytest -q`: PASS; 115 passed in 0.60 seconds; repository coverage
+  98.44%, above the 80% threshold.
+- EventBus and Event modules: 100% statement coverage.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 78 files formatted.
+- `uv run mypy src`: PASS; no issues in 35 source files.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- `git diff --check` on Task 2.7 files: PASS. A whole-working-tree check also
+  reports the pre-existing trailing blank line in `AGENTS.md`; that unrelated file
+  was preserved unchanged.
+
+All checks were Codex-executed; no user-executed verification was needed. The
+existing pre-Task-2.7 handoff edits documenting Task 2.6's merge were preserved and
+reconciled above. Task 2.7 was committed as
+`45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to
+`origin/feat/2.7-event-system`. Draft PR #3 targets `main` and awaits final review
+and merge. The documented concurrency limitation remains that independent publishes
+may interleave; event instances and payloads remain mutable. Task 2.8 has not started
+and requires separate authorization.
 
 ## Landing page publication to GitHub — 2026-10-26
 

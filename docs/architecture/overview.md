@@ -14,7 +14,8 @@ reshaping the repository.
 - `base` defines common component contracts and framework exceptions.
 - `base.lifecycle` provides an opt-in asynchronous lifecycle contract; identity-only
   components remain lifecycle-free.
-- `events` provides an asynchronous in-process event bus.
+- `events` provides a deterministic sequential in-process event bus with exact and
+  global-wildcard subscriptions.
 - `registry` provides name-addressable component registration.
 - `tools` wraps asynchronous Python callables as AgentOS tools.
 - `agents` defines the backward-compatible agent protocol and deterministic echo
@@ -39,3 +40,9 @@ admission check, and returns the raw typed result. It does not coordinate in-fli
 execution with shutdown: a concurrent stop may finish while a run is awaiting. Agent
 implementations and future adapters own provider-specific behavior; the base class
 does not depend on Runtime, EventBus, ServiceContainer, or LangGraph.
+
+`EventBus` snapshots matching registrations at publication start and runs exact
+handlers before wildcard handlers, sequentially. A handler failure or cancellation
+stops that publication; concurrent publications may interleave. The bus is
+in-memory only and does not serialize events or provide persistence, retries, or
+distributed delivery.
