@@ -77,6 +77,30 @@ agent state is `STOPPED`. Execution does not mutate lifecycle state. A
 `BaseAgent[AgentContext, AgentResult]` specialization is structurally compatible with
 the existing `Agent` protocol; `EchoAgent` and the protocol itself are unchanged.
 
+### Event system
+
+`agentos.events.EventBus` dispatches `Event` objects in-process. Subscribe with a
+nonblank exact event type or the global wildcard `"*"`; the value is preserved as
+provided. Other event-type strings containing `*` are literal names, not patterns.
+Each call to `subscribe()` is a separate registration, including repeated
+registrations of the same handler. `unsubscribe()` removes the first equal
+registration and returns whether it found one. `subscriber_count()` counts exact
+registrations only (or global registrations when queried with `"*"`).
+
+Each `publish()` snapshots its handlers before callbacks begin, runs exact handlers
+in registration order, then global wildcard handlers in registration order, and
+awaits each sequentially. Subscription changes during dispatch affect future
+publishes only. A handler exception propagates unchanged and stops later handlers;
+cancellation also propagates and stops dispatch. Publishing with no subscribers is
+a successful no-op. Concurrent publishes are independent and may interleave; the
+bus does not provide cross-publication ordering or thread-safety guarantees.
+
+`Event.type` must be a nonblank string and valid values are preserved exactly. Event
+instances and payloads remain mutable for compatibility. Payloads are in-process
+Python data, are passed to handlers without serialization or deep copying, and may
+be mutated by handlers. External broker serialization, persistence, retries, and
+background delivery are outside this API.
+
 ::: agentos
 
 ::: agentos.core
