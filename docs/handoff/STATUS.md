@@ -12,8 +12,9 @@
 - Pull request: **#2** (`feat/2.6-base-agent` → `main`) — merged; standard merge commit
 - Completed task: **2.7 Event System** — committed as `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to `origin/feat/2.7-event-system`
 - Pull request: **#3** (`feat/2.7-event-system` → `main`) — merged into `main` as `2ad392fc3f0ccc9355ed1d99db05c81d00c50ea1`
-- Current task: **2.8 Service Container** — implementation verified on `feat/2.8-service-container`; awaiting commit approval
-- Gate: **Task 2.8 requires explicit commit approval; Task 2.9 needs separate authorization**
+- Completed task: **2.8 Service Container** — committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed to `origin/feat/2.8-service-container`
+- Pull request: **#4** (`feat/2.8-service-container` → `main`) — draft; awaiting final review and merge
+- Gate: **Task 2.9 needs separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -307,7 +308,7 @@ remains that independent publishes may interleave; event instances and payloads
 remain mutable. Task 2.8 is verified and awaits commit approval; Task 2.9 has not
 started.
 
-## Task 2.8 implementation (verified; awaiting commit approval)
+## Task 2.8 implementation (committed, pushed, and verified; PR #4 awaiting review and merge)
 
 Added a synchronous, type-keyed `ServiceContainer` with instance registration,
 lazy singleton and transient factories, explicit nested dependency resolution,
@@ -344,7 +345,11 @@ All checks were Codex-executed in the uv-managed Windows Python 3.14 environment
 The full suite preserves the repository's 80% coverage threshold. The known limits
 are synchronous short-running factories, coarse-lock serialization, and no guarantee
 against deadlock if a factory waits for another thread that needs this container.
-Task 2.8 is uncommitted and awaits explicit approval. Task 2.9 has not started.
+Task 2.8 was committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed to
+`origin/feat/2.8-service-container`. Draft PR #4 targets `main` and awaits final
+review and merge. The synchronous factory, coarse-locking, and MyPy Protocol/abstract
+key limitations remain as documented above. Task 2.9 has not started and requires
+separate authorization.
 
 ## Landing page publication to GitHub — 2026-10-26
 
