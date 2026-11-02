@@ -9,11 +9,24 @@
 | 2.5 | Lifecycle contracts | User-verified; merged as `57f9383` | Complete |
 | 2.6 | BaseAgent | Verified; merged as `c34c19b` | Complete |
 | 2.7 | Event system | Committed `45482d4`; pushed; verified; merged as `2ad392f` | Complete |
-| 2.8 | Service container | Committed `168be89`; pushed; verified | PR #4 awaiting final review and merge |
-| 2.9 | Component manager | Planned | Task-by-task approval |
+| 2.8 | Service container | Committed `168be89`; pushed; verified; merged as `779dae2` | Complete |
+| 2.9 | Component manager | Implemented and awaiting commit approval | Verification and approval gate |
 | 2.10 | Runtime | Planned | Task-by-task approval |
 | 2.11 | Integration tests | Planned | Task-by-task approval |
 | 2.12 | Sprint release | Planned | Task-by-task approval |
+
+## Task 2.9 acceptance criteria
+
+- Explicit asynchronous lifecycle coordination for registered `LifecycleComponent`s.
+- Stable named dependency ordering, complete graph and component-state preflight,
+  initialize-all-before-start, and reverse-order shutdown/rollback.
+- Serialized lifecycle operations, same-task reentrancy protection, deterministic
+  cancellation and process-control handling, ordinary failure aggregation, and
+  cleanup retry from `FAILED`.
+- No modifications to Runtime, Registry, ServiceContainer, LifecycleComponent,
+  BaseAgent, EventBus, dependency declarations, or `uv.lock`.
+- Implementation remains on `feat/2.9-component-manager` based on Task 2.8 merge
+  `779dae278a9eb6015bb1791c0090d08a201eef93`.
 
 ## Task 2.3.2 acceptance criteria (proposal; confirm before implementation)
 - Typed generic result contract; explicit semantics for success/failure/partial/retry.
