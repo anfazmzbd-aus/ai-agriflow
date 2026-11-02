@@ -17,6 +17,10 @@ class RegistryError(ComponentError):
     """Raised when a registry operation cannot be completed."""
 
 
+class ServiceError(ComponentError):
+    """Raised when a service registration or resolution cannot be completed."""
+
+
 class RegistrationError(RegistryError):
     """Raised when a registry operation is invalid."""
 

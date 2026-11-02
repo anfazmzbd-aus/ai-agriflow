@@ -11,6 +11,7 @@ from agentos.base.exceptions import (
     ModelError,
     RegistrationError,
     RegistryError,
+    ServiceError,
     ToolError,
     WorkflowError,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "ModelError",
     "RegistrationError",
     "RegistryError",
+    "ServiceError",
     "ToolError",
     "WorkflowError",
 ]

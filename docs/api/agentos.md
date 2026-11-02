@@ -12,7 +12,8 @@ AgentOS framework exceptions are rooted at `AgentOSError` and exported from
 `ConfigurationError` represents invalid configuration. Domain errors include
 `AgentOSRuntimeError`, `WorkflowError`, `AgentError`, `ToolError`, `ModelError`,
 `AgentOSMemoryError`, and `RegistryError`. `RegistrationError` remains available
-and derives from `RegistryError`. When translating a lower-level exception, use
+and derives from `RegistryError`; `ServiceError` reports service container
+registration or resolution failures. When translating a lower-level exception, use
 `raise DomainError("safe summary") from exc` to retain the original cause. Keep
 credentials and secret values out of exception messages.
 
@@ -124,3 +125,30 @@ background delivery are outside this API.
 ::: agentos.adapters
 
 ::: agentos.telemetry
+
+### Service container
+
+`agentos.container.ServiceContainer` maps Python class objects to explicit service
+instances or synchronous factories. Class keys may be concrete classes, abstract
+classes, or Protocols. Factories receive the container and may call `resolve()` for
+their dependencies. Registration is unique; duplicate keys raise `ServiceError`.
+Instances preserve identity. Factories default to lazy singleton lifetime and may
+select `lifetime="transient"` to construct a new result for each resolution.
+Singleton results are cached only after successful, non-`None` construction.
+
+`resolve(ServiceType)` returns the generic type declared by that key. This is a
+static typing contract; the container does not use runtime `isinstance()` checks.
+Because MyPy models `type[T]` as a constructible class, Protocol and abstract-class
+tokens need an explicitly typed `type[Interface]` cast/alias at the registration
+site; resolving through that typed token retains the interface result type.
+Missing registrations and direct or indirect circular dependencies raise
+`ServiceError`. Factory exceptions propagate unchanged, and failed singleton
+construction can be retried. `None` instances and `None` factory results are
+rejected. There is no replacement API.
+
+Registration and resolution are synchronous and serialized by a per-container
+reentrant lock. This ensures a singleton factory is successfully run at most once,
+including concurrent resolution. Factories should be short-running and must not
+synchronously wait for another thread that needs the same container. Async factories
+and awaitable factory results are unsupported. The container does not initialize,
+stop, or dispose services; it is independent of `Registry`, `Runtime`, and `EventBus`.
