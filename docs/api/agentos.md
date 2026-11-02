@@ -112,6 +112,8 @@ background delivery are outside this API.
 
 ::: agentos.registry
 
+::: agentos.manager
+
 ::: agentos.tools
 
 ::: agentos.agents
@@ -152,3 +154,58 @@ including concurrent resolution. Factories should be short-running and must not
 synchronously wait for another thread that needs the same container. Async factories
 and awaitable factory results are unsupported. The container does not initialize,
 stop, or dispose services; it is independent of `Registry`, `Runtime`, and `EventBus`.
+
+### Component manager
+
+`agentos.manager.ComponentManager` coordinates explicitly registered
+`LifecycleComponent` instances. Register a component with
+`register(component, depends_on=("dependency-name",))`; forward references are
+allowed, but missing dependencies, duplicate dependency declarations, self-dependency,
+and cycles raise `ConfigurationError` before any lifecycle hook runs. `get(name)`
+uses the existing `Registry` lookup and duplicate-name behavior (`RegistrationError`),
+and `names()` returns registration order. Registering the same object twice is rejected even under another
+name. There is no replacement or unregistration API.
+
+Dependencies describe lifecycle ordering only and are independent of
+`ServiceContainer` construction dependencies. A stable topological order uses
+registration order to break ties. The manager initializes all components before it
+starts any, then stops in reverse topological order. Registration closes after
+preflight and before initialization hooks begin. Before hooks run, the manager requires all registered
+components to be `NEW`; preflight failures do not run hooks or mark the manager
+failed. Registration remains closed throughout lifecycle operations and after
+initialization starts. `initialize()`, `start()`, and `stop()` are idempotent after their respective
+successful transitions. `start()` does not implicitly initialize components, and
+`STOPPED` is terminal.
+
+| Manager state | Call | Result |
+| --- | --- | --- |
+| `NEW` | `initialize()` | `INITIALIZED` after all hooks succeed; hook failure/cancellation gives `FAILED` |
+| `NEW` | `start()` | Invalid; remains `NEW` |
+| `NEW` | `stop()` | `STOPPED`; new components' stop hooks are not invoked by the component contract |
+| `INITIALIZED` | `initialize()` | Idempotent no-op |
+| `INITIALIZED` | `start()` | `STARTED` after all hooks succeed; hook failure/cancellation gives `FAILED` |
+| `INITIALIZED` or `STARTED` | `stop()` | `STOPPED` after cleanup; cleanup failure gives `FAILED` |
+| `STARTED` | `start()` | Idempotent no-op |
+| `FAILED` | `stop()` | `STOPPED` after successful retry; otherwise remains `FAILED` |
+| `FAILED` or `STOPPED` | `initialize()` or `start()` | Invalid; state unchanged |
+| `STOPPED` | `stop()` | Idempotent no-op |
+
+Dependency-graph and component-state preflight errors occur before hooks and leave the
+manager `NEW`, allowing registration/configuration to be corrected before retry.
+
+Ordinary hook failures propagate unchanged when rollback succeeds. If rollback also
+fails, the original failure and rollback failures are retained in an `ExceptionGroup`.
+Shutdown attempts all components even after ordinary cleanup failures; failures are
+grouped, the manager remains `FAILED`, and a later `stop()` retries every component
+that is not stopped. Cancellation, `KeyboardInterrupt`, and `SystemExit` are
+propagated without wrapping after best-effort cleanup; a second interruption can
+interrupt cleanup, so call `stop()` again to retry. An asyncio lock serializes
+manager lifecycle operations. Same-task recursive lifecycle calls fail with
+`AgentOSRuntimeError`; cancellation while waiting for that lock has no state effect.
+Because `LifecycleComponent.stop()` from `NEW` deliberately skips its hook, a
+process-control exception raised during that component's initialization cannot
+invoke its cleanup hook through the public lifecycle contract; the manager still
+attempts `stop()` and records the manager as `FAILED`.
+The manager does not create services, emit events, manage Runtime, or drain in-flight
+agent executions. As with `BaseAgent`, an execution already admitted may finish after
+manager shutdown completes.

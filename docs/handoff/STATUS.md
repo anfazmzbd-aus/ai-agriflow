@@ -308,7 +308,7 @@ remains that independent publishes may interleave; event instances and payloads
 remain mutable. Task 2.8 is verified and awaits commit approval; Task 2.9 has not
 started.
 
-## Task 2.8 implementation (committed, pushed, and verified; PR #4 awaiting review and merge)
+## Task 2.8 implementation (committed, pushed, verified, and merged)
 
 Added a synchronous, type-keyed `ServiceContainer` with instance registration,
 lazy singleton and transient factories, explicit nested dependency resolution,
@@ -346,10 +346,67 @@ The full suite preserves the repository's 80% coverage threshold. The known limi
 are synchronous short-running factories, coarse-lock serialization, and no guarantee
 against deadlock if a factory waits for another thread that needs this container.
 Task 2.8 was committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed to
-`origin/feat/2.8-service-container`. Draft PR #4 targets `main` and awaits final
-review and merge. The synchronous factory, coarse-locking, and MyPy Protocol/abstract
-key limitations remain as documented above. Task 2.9 has not started and requires
-separate authorization.
+`origin/feat/2.8-service-container`. PR #4 was merged into `main` at
+`779dae278a9eb6015bb1791c0090d08a201eef93`. The synchronous factory, coarse-locking,
+and MyPy Protocol/abstract-key limitations remain as documented above.
+
+## Task 2.9 — Component Manager (committed, pushed, and verified; PR #5 awaiting review and merge)
+
+Branch: `feat/2.9-component-manager`, based on Task 2.8 merge commit
+`779dae278a9eb6015bb1791c0090d08a201eef93`. Added the standalone asynchronous
+`ComponentManager` and tests. It registers explicit lifecycle components by their
+existing names, validates forward-referenced dependency graphs and component states
+before hooks, initializes and starts in stable topological order, and shuts down or
+rolls back in reverse order. A manager asyncio lock serializes operations; recursive
+same-task calls fail. Ordinary rollback/shutdown errors are aggregated, and failed
+cleanup can be retried with `stop()`. Cancellation and process-control exceptions
+propagate without ordinary exception wrapping after best-effort cleanup.
+
+Implementation commit: `f5f72242af4766755cbc0673e048a0a3d8a042a1`, pushed to
+`origin/feat/2.9-component-manager`. Draft PR #5 targets `main` and awaits final
+review and merge.
+
+The manager does not construct services or integrate with Runtime, EventBus,
+ServiceContainer, or BaseAgent execution draining. The existing BaseAgent behavior
+remains: an admitted run may finish after manager shutdown. One lifecycle boundary is
+inherited from `LifecycleComponent`: `stop()` from `NEW` skips its cleanup hook. If
+KeyboardInterrupt or SystemExit interrupts initialization while a component is still
+NEW, the manager attempts public `stop()`, but cannot invoke that component's cleanup
+hook without bypassing the existing state machine. Repeated interruption can also
+interrupt best-effort cleanup; call `stop()` again to retry. When a primary
+control-flow exception is followed by ordinary cleanup failures, the primary object
+and existing cause are preserved, while cleanup failures are summarized by type in
+notes rather than retained as exception objects.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages resolved/audited after setting
+  `UV_CACHE_DIR` to the existing repository `.uv-cache`. The first default-cache
+  attempt failed with Windows `os error 183` while creating the cache directory.
+- `uv run pytest tests/unit/manager -q --no-cov`: PASS; 36 passed.
+- `uv run pytest -q`: PASS; 170 passed; 97.39% repository coverage. The configured
+  80% threshold passed. Pytest emitted a nonfatal cache-provider WinError 183 warning.
+- `src/agentos/manager/component_manager.py`: 94% combined statement/branch coverage.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 84 files formatted.
+- `uv run mypy src`: PASS; no issues in 39 source files.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- Scoped `git diff --check` and whitespace validation of all seven Task 2.9 files:
+  PASS. A whole-tree check reports a pre-existing trailing blank line in unrelated
+  `AGENTS.md`; that file was not modified for Task 2.9.
+
+Remaining coverage gaps are lines/branches 116, 140, 199, 204→202, 206–209,
+212→211, 214→211, and 216. Lines 116, 140, and 216 are defensive invariants
+unreachable through public manager operations. The DFS visited/return paths at 199
+and 204–216 are not reached by validated public dependency graphs: Kahn's stalled
+residual graph contains cycles, and cycle search returns at the first detected cycle.
+No private state was altered to manufacture those paths. Repository coverage is
+97.39%, above the required 80% threshold.
+
+Verification above was Codex-executed in the Windows uv-managed Python 3.14
+environment. The unrelated edits to `.gitignore`, `AGENTS.md`, `README.md`, and
+`pyproject.toml` are preserved. `uv.lock` is unchanged. Task 2.9 is committed and
+pushed; those four unrelated modifications remain uncommitted.
 
 ## Landing page publication to GitHub — 2026-10-26
 
