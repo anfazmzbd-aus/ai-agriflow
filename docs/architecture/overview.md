@@ -17,6 +17,8 @@ reshaping the repository.
 - `events` provides a deterministic sequential in-process event bus with exact and
   global-wildcard subscriptions.
 - `registry` provides name-addressable component registration.
+- `container` provides explicit type-keyed service registration and synchronous
+  dependency resolution; it does not own lifecycle or disposal.
 - `tools` wraps asynchronous Python callables as AgentOS tools.
 - `agents` defines the backward-compatible agent protocol and deterministic echo
   agent, plus a generic lifecycle-aware `BaseAgent` for typed async execution.
@@ -46,3 +48,10 @@ handlers before wildcard handlers, sequentially. A handler failure or cancellati
 stops that publication; concurrent publications may interleave. The bus is
 in-memory only and does not serialize events or provide persistence, retries, or
 distributed delivery.
+
+`ServiceContainer` is separate from the name-based `Registry`. It resolves explicit
+class, abstract-class, and Protocol keys through instances or synchronous factories.
+Singleton creation is lazy and serialized by a per-container reentrant lock;
+transient factories run for each resolution. The container detects recursive
+dependency cycles but does not scan constructors, manage lifecycle, dispose services,
+or integrate with Runtime yet.

@@ -1,7 +1,7 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.7
+- Phase: Sprint 2, Task 2.8
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
@@ -11,8 +11,9 @@
 - Completed task: **2.6 BaseAgent** — verified and merged into `main` as `c34c19b5fe592daa3dd26c1de1bf269c38360bee`
 - Pull request: **#2** (`feat/2.6-base-agent` → `main`) — merged; standard merge commit
 - Completed task: **2.7 Event System** — committed as `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to `origin/feat/2.7-event-system`
-- Pull request: **#3** (`feat/2.7-event-system` → `main`) — draft; awaiting final review and merge
-- Gate: **Task 2.8 requires separate authorization**
+- Pull request: **#3** (`feat/2.7-event-system` → `main`) — merged into `main` as `2ad392fc3f0ccc9355ed1d99db05c81d00c50ea1`
+- Current task: **2.8 Service Container** — implementation verified on `feat/2.8-service-container`; awaiting commit approval
+- Gate: **Task 2.8 requires explicit commit approval; Task 2.9 needs separate authorization**
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -266,7 +267,7 @@ historical discrepancy with an unconfirmed cause. Task 2.6 was committed as
 `c34c19b5fe592daa3dd26c1de1bf269c38360bee`. The Task 2.7 feature branch is based
 on that merge commit. Task 2.8 has not started and requires separate authorization.
 
-## Task 2.7 implementation (committed, pushed, and verified; PR #3 awaiting review and merge)
+## Task 2.7 implementation (committed, pushed, verified, and merged)
 
 Refined the in-process `EventBus` with input validation, `unsubscribe()`,
 side-effect-free counts, sequential exact-before-wildcard dispatch, registration
@@ -300,10 +301,50 @@ All checks were Codex-executed; no user-executed verification was needed. The
 existing pre-Task-2.7 handoff edits documenting Task 2.6's merge were preserved and
 reconciled above. Task 2.7 was committed as
 `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to
-`origin/feat/2.7-event-system`. Draft PR #3 targets `main` and awaits final review
-and merge. The documented concurrency limitation remains that independent publishes
-may interleave; event instances and payloads remain mutable. Task 2.8 has not started
-and requires separate authorization.
+`origin/feat/2.7-event-system`. GitHub merged PR #3 into `main` as
+`2ad392fc3f0ccc9355ed1d99db05c81d00c50ea1`. The documented concurrency limitation
+remains that independent publishes may interleave; event instances and payloads
+remain mutable. Task 2.8 is verified and awaits commit approval; Task 2.9 has not
+started.
+
+## Task 2.8 implementation (verified; awaiting commit approval)
+
+Added a synchronous, type-keyed `ServiceContainer` with instance registration,
+lazy singleton and transient factories, explicit nested dependency resolution,
+duplicate/missing/cycle errors, and retry after failed singleton creation. A
+per-container `RLock` protects registration and resolution; a per-thread resolution
+stack detects direct and indirect cycles and is cleared on every factory exit. Factory
+exceptions propagate unchanged. `None` instances/results and awaitable factory
+results are rejected. The container does not own component lifecycle or disposal and
+is not integrated with `Registry` or `Runtime`.
+
+Added `ServiceError(ComponentError)` and public exports from `agentos.base` and
+`agentos.container`. Runtime typing for concrete keys is generic. MyPy requires a
+typed cast/alias at Protocol and abstract-class token sites because `type[T]` models
+instantiable classes; the typed resolution result remains the interface type. This
+limitation is documented in the API reference.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages resolved/audited.
+- `uv run pytest tests/unit/container -q --no-cov`: PASS; 19 passed in 0.13 seconds.
+- `uv run pytest -q`: PASS; 134 passed in 0.77 seconds; repository coverage 98.71%,
+  above the 80% threshold.
+- `src/agentos/container/container.py`: 100% statement and branch coverage.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 81 files already formatted.
+- `uv run mypy src`: PASS; 37 source files.
+- `uv run mypy tests/unit/container/test_container.py`: PASS; 1 test file.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- `git diff --check` on tracked Task 2.8 files: PASS. The no-index whitespace
+  checks on the three new files emitted no whitespace diagnostics (exit 1 reflects
+  that each file differs from the empty comparison source).
+
+All checks were Codex-executed in the uv-managed Windows Python 3.14 environment.
+The full suite preserves the repository's 80% coverage threshold. The known limits
+are synchronous short-running factories, coarse-lock serialization, and no guarantee
+against deadlock if a factory waits for another thread that needs this container.
+Task 2.8 is uncommitted and awaits explicit approval. Task 2.9 has not started.
 
 ## Landing page publication to GitHub — 2026-10-26
 
