@@ -350,7 +350,7 @@ Task 2.8 was committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed 
 `779dae278a9eb6015bb1791c0090d08a201eef93`. The synchronous factory, coarse-locking,
 and MyPy Protocol/abstract-key limitations remain as documented above.
 
-## Task 2.9 — Component Manager (implemented; awaiting commit approval)
+## Task 2.9 — Component Manager (committed, pushed, and verified; PR #5 awaiting review and merge)
 
 Branch: `feat/2.9-component-manager`, based on Task 2.8 merge commit
 `779dae278a9eb6015bb1791c0090d08a201eef93`. Added the standalone asynchronous
@@ -361,6 +361,10 @@ rolls back in reverse order. A manager asyncio lock serializes operations; recur
 same-task calls fail. Ordinary rollback/shutdown errors are aggregated, and failed
 cleanup can be retried with `stop()`. Cancellation and process-control exceptions
 propagate without ordinary exception wrapping after best-effort cleanup.
+
+Implementation commit: `f5f72242af4766755cbc0673e048a0a3d8a042a1`, pushed to
+`origin/feat/2.9-component-manager`. Draft PR #5 targets `main` and awaits final
+review and merge.
 
 The manager does not construct services or integrate with Runtime, EventBus,
 ServiceContainer, or BaseAgent execution draining. The existing BaseAgent behavior
@@ -401,9 +405,8 @@ No private state was altered to manufacture those paths. Repository coverage is
 
 Verification above was Codex-executed in the Windows uv-managed Python 3.14
 environment. The unrelated edits to `.gitignore`, `AGENTS.md`, `README.md`, and
-`pyproject.toml` are preserved. `uv.lock` is unchanged. The seven Task 2.9 files are
-staged for the approved implementation commit; the four unrelated modifications
-remain unstaged.
+`pyproject.toml` are preserved. `uv.lock` is unchanged. Task 2.9 is committed and
+pushed; those four unrelated modifications remain uncommitted.
 
 ## Landing page publication to GitHub — 2026-10-26
 
