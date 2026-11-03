@@ -28,7 +28,8 @@ reshaping the repository.
 - `workflows` runs ordered asynchronous workflow steps.
 - `adapters` defines the LangGraph adapter boundary.
 - `telemetry` records structured runtime events.
-- `runtime` composes settings, events, registry, and telemetry.
+- `runtime` composes settings, events, registry, telemetry, typed services, and the
+  component lifecycle manager.
 
 ## Component lifecycle boundary
 
@@ -67,6 +68,17 @@ handlers before wildcard handlers, sequentially. A handler failure or cancellati
 stops that publication; concurrent publications may interleave. The bus is
 in-memory only and does not serialize events or provide persistence, retries, or
 distributed delivery.
+
+`Runtime` preserves its legacy synchronous `start()` operation for logging and the
+historical `runtime.started` telemetry event. Managed orchestration uses the separate
+`initialize_async()`, `start_async()`, and `stop_async()` methods. Runtime delegates
+state, ordering, rollback, and cleanup to `ComponentManager`; it does not create a
+second lifecycle state machine. Managed lifecycle telemetry is best-effort and emitted
+after transitions. EventBus is not used for lifecycle notifications. Runtime serializes
+its managed entry points and rejects recursive calls. It does not drain active agent
+executions. Its public `services` and `component_manager` fields must not be replaced
+after construction because Runtime's other fields and type bindings retain their
+original object identities.
 
 `ServiceContainer` is separate from the name-based `Registry`. It resolves explicit
 class, abstract-class, and Protocol keys through instances or synchronous factories.

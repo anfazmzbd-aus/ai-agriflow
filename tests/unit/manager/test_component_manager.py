@@ -659,7 +659,11 @@ async def test_runtime_registry_and_base_agent_boundaries_remain_independent() -
     assert isinstance(EchoAgent(), object)
     assert not hasattr(manager, "event_bus")
     assert not hasattr(manager, "service_container")
-    assert not hasattr(runtime, "component_manager")
+    assert isinstance(runtime.component_manager, ComponentManager)
+    assert runtime.component_manager is not manager
+    assert runtime.component_manager.names() == ()
+    assert runtime.component_manager.state is LifecycleState.NEW
+    assert manager.names() == ("managed",)
     assert component.lifecycle_state is LifecycleState.STARTED
 
 

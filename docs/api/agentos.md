@@ -108,6 +108,42 @@ background delivery are outside this API.
 
 ::: agentos.runtime
 
+### Runtime lifecycle
+
+`agentos.runtime.Runtime` keeps its existing constructor order—settings, EventBus,
+Registry, telemetry—and `Runtime.from_settings()` factory. Four-argument manual
+construction remains supported. Runtime creates a `ServiceContainer` and
+`ComponentManager` by default and binds the core objects by their concrete Python
+class keys. Runtime fields and resolved core services refer to the same objects.
+Python generic specializations such as `Registry[object]` are not separate runtime
+class keys; a Runtime owns one `Registry`, registered under the `Registry` class key.
+
+Runtime preflights all six core keys before registering any of them. A key already
+present in a supplied container raises `ServiceError` because the container cannot
+inspect a factory's eventual identity without constructing it. Unrelated user service
+registrations are preserved. Runtime does not resolve arbitrary application services;
+use `runtime.services` explicitly. It does not initialize or dispose services.
+
+The synchronous `Runtime.start()` remains the legacy logging-configuration and
+`runtime.started` telemetry operation. It does not start managed components. Once any
+managed lifecycle call is requested, the legacy method raises `AgentOSRuntimeError`
+instead of emitting a misleading readiness event. Managed lifecycle uses
+`initialize_async()`, `start_async()`, and `stop_async()`; these delegate to
+`ComponentManager` and expose its read-only state through `runtime.state`.
+`start_async()` requires prior initialization and never invokes the synchronous
+method. No async work is run through an implicit event loop.
+
+The Runtime lock serializes its managed methods and rejects same-task recursive calls.
+Cancellation while waiting for the Runtime lock does not change manager state, though
+the legacy/managed mixing boundary becomes closed once the managed request begins.
+Ordinary telemetry errors are suppressed for managed transitions and cannot replace
+lifecycle results. Telemetry control-flow exceptions propagate after the state change.
+Failure telemetry is attempted only once the manager is `FAILED`. Runtime does not
+publish lifecycle events through EventBus, retry telemetry, or drain in-flight agent
+execution. Do not replace the public `services` or `component_manager` fields after
+construction: doing so breaks the identity between Runtime fields and their core
+container bindings.
+
 ::: agentos.events
 
 ::: agentos.registry
