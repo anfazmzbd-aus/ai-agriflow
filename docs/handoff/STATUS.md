@@ -1,7 +1,7 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.8
+- Phase: Sprint 2, Task 2.10 — Runtime Integration and Orchestration
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
@@ -13,8 +13,9 @@
 - Completed task: **2.7 Event System** — committed as `45482d442243a1a02c4e09c7a93bb0443c466471` and pushed to `origin/feat/2.7-event-system`
 - Pull request: **#3** (`feat/2.7-event-system` → `main`) — merged into `main` as `2ad392fc3f0ccc9355ed1d99db05c81d00c50ea1`
 - Completed task: **2.8 Service Container** — committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed to `origin/feat/2.8-service-container`
-- Pull request: **#4** (`feat/2.8-service-container` → `main`) — draft; awaiting final review and merge
-- Gate: **Task 2.9 needs separate authorization**
+- Pull request: **#4** (`feat/2.8-service-container` → `main`) — merged in `779dae278a9eb6015bb1791c0090d08a201eef93`
+- Pull request: **#5** (`feat/2.9-component-manager` → `main`) — merged in `26313e5ea6229883d378f0b2be3ade1bdfe256f6`
+- Current task: **2.10 Runtime Integration and Orchestration** — implementation in progress on `feat/2.10-runtime`
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -350,7 +351,7 @@ Task 2.8 was committed as `168be89f284f6800493d27d13cad574b2bb87d85` and pushed 
 `779dae278a9eb6015bb1791c0090d08a201eef93`. The synchronous factory, coarse-locking,
 and MyPy Protocol/abstract-key limitations remain as documented above.
 
-## Task 2.9 — Component Manager (committed, pushed, and verified; PR #5 awaiting review and merge)
+## Task 2.9 — Component Manager (committed, pushed, verified, and merged)
 
 Branch: `feat/2.9-component-manager`, based on Task 2.8 merge commit
 `779dae278a9eb6015bb1791c0090d08a201eef93`. Added the standalone asynchronous
@@ -363,8 +364,8 @@ cleanup can be retried with `stop()`. Cancellation and process-control exception
 propagate without ordinary exception wrapping after best-effort cleanup.
 
 Implementation commit: `f5f72242af4766755cbc0673e048a0a3d8a042a1`, pushed to
-`origin/feat/2.9-component-manager`. Draft PR #5 targets `main` and awaits final
-review and merge.
+`origin/feat/2.9-component-manager`. PR #5 merged into `main` at
+`26313e5ea6229883d378f0b2be3ade1bdfe256f6` after CI passed.
 
 The manager does not construct services or integrate with Runtime, EventBus,
 ServiceContainer, or BaseAgent execution draining. The existing BaseAgent behavior
@@ -407,6 +408,54 @@ Verification above was Codex-executed in the Windows uv-managed Python 3.14
 environment. The unrelated edits to `.gitignore`, `AGENTS.md`, `README.md`, and
 `pyproject.toml` are preserved. `uv.lock` is unchanged. Task 2.9 is committed and
 pushed; those four unrelated modifications remain uncommitted.
+
+## Task 2.10 — Runtime Integration and Orchestration (implemented; awaiting commit approval)
+
+Branch: `feat/2.10-runtime`, based on Task 2.9 merge commit
+`26313e5ea6229883d378f0b2be3ade1bdfe256f6`. Runtime preserves its original four
+constructor arguments, imports, `from_settings()` behavior, and synchronous
+`start()` operation. New defaulted `services` and `component_manager` fields bind the
+Runtime core objects by type after a collision preflight. Existing core keys in a
+provided container are rejected without resolving factories; unrelated user service
+bindings remain intact. Python generic Registry specializations share the single
+runtime `Registry` class key.
+
+Managed lifecycle uses `initialize_async()`, `start_async()`, and `stop_async()` and
+delegates state, ordering, rollback, cleanup, and retry to ComponentManager. A private
+Runtime lock serializes calls, rejects same-task reentrancy, and leaves manager state
+unchanged when a waiter is cancelled; the legacy/managed mixing boundary closes when
+a managed request begins. Managed telemetry follows successful transitions, ordinary
+telemetry errors are suppressed, and control-flow telemetry exceptions propagate.
+Runtime lifecycle events are not published through EventBus. Replacing the public
+`services` or `component_manager` fields after construction can break the identity
+between Runtime fields and core service bindings. Runtime does not drain in-flight
+BaseAgent executions.
+
+The approved compatibility test update in `tests/unit/manager/test_component_manager.py`
+replaces the stale assertion that Runtime lacks a manager with assertions that it
+owns a separate, empty ComponentManager unaffected by the independent manager under
+test. No Task 2.9 implementation file was changed.
+
+### Codex-executed verification
+
+- `uv sync --locked --extra dev`: PASS; 83 packages resolved/audited using the
+  existing repository `.uv-cache`.
+- `uv run pytest tests/unit/manager -q --no-cov`: PASS; 36 passed.
+- `uv run pytest tests/unit/runtime -q --no-cov`: PASS; 27 passed.
+- `uv run pytest -q`: PASS; 196 passed; 97.48% repository coverage, above 80%.
+- `src/agentos/runtime/runtime.py`: 98% combined statement/branch coverage. The two
+  unvisited branches are expected no-telemetry paths on idempotent initialize/start.
+- `uv run ruff check .`: PASS.
+- `uv run ruff format --check .`: PASS; 84 files formatted.
+- `uv run mypy src`: PASS; no issues in 39 source files.
+- `uv build --offline`: PASS; source distribution and wheel built.
+- Scoped `git diff --check`: PASS.
+
+Pytest emitted a nonfatal Windows cache-provider WinError 183 warning. The earlier
+Task 2.9 defensive coverage exclusions remain recorded above. All verification was
+Codex-executed in the Windows uv-managed Python 3.14 environment. `.gitignore`,
+`AGENTS.md`, `README.md`, and `pyproject.toml` remain preserved; `uv.lock` is
+unchanged. Task 2.10 is not staged or committed and awaits the review/commit gate.
 
 ## Landing page publication to GitHub — 2026-10-26
 
