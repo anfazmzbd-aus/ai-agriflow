@@ -11,7 +11,7 @@
 | 2.7 | Event system | Committed `45482d4`; pushed; verified; merged as `2ad392f` | Complete |
 | 2.8 | Service container | Committed `168be89`; pushed; verified; merged as `779dae2` | Complete |
 | 2.9 | Component manager | Committed `f5f7224`; pushed; verified; merged as `26313e5` | Complete |
-| 2.10 | Runtime | Implemented and verified on `feat/2.10-runtime` | Commit approval gate |
+| 2.10 | Runtime | Committed `2b990a2d5d8ec4f7ee86af20f83b34156b041d34`; pushed and verified | Draft PR #6 awaiting review and merge |
 | 2.11 | Integration tests | Planned | Task-by-task approval |
 | 2.12 | Sprint release | Planned | Task-by-task approval |
 
