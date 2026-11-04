@@ -17,7 +17,8 @@
 - Pull request: **#5** (`feat/2.9-component-manager` → `main`) — merged in `26313e5ea6229883d378f0b2be3ade1bdfe256f6`
 - Completed task: **2.10 Runtime Integration and Orchestration** — implementation commit `2b990a2d5d8ec4f7ee86af20f83b34156b041d34`, documentation commit `323def301b80b5f02105ab0c866391360a62f8e4`, merged as `d6afa8a3828ba4d8736d6df0e799a9249f83d559`
 - Pull request: **#6** (`feat/2.10-runtime` → `main`) — merged; GitHub Actions CI passed before merge
-- Current task: **2.11 Integration Testing and System Validation** — implementation and verification in progress on `feat/2.11-integration-tests`
+- Completed task: **2.11 Integration Testing and System Validation** — committed as `20129d0c42c7eddaf17c99426cc2f94c21f3854c` and pushed to `origin/feat/2.11-integration-tests`
+- Pull request: **#7** (`feat/2.11-integration-tests` → `main`) — draft; awaiting review and merge
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -464,7 +465,7 @@ Implementation commit `2b990a2d5d8ec4f7ee86af20f83b34156b041d34` was pushed to
 `323def301b80b5f02105ab0c866391360a62f8e4` was also pushed. PR #6 merged into
 `main` at `d6afa8a3828ba4d8736d6df0e799a9249f83d559` after CI passed.
 
-## Task 2.11 — Integration Testing and System Validation (implemented and verified; awaiting commit approval)
+## Task 2.11 — Integration Testing and System Validation (implemented, verified, committed, and pushed; draft PR #7 awaiting review and merge)
 
 Branch: `feat/2.11-integration-tests`, based on the Task 2.10 merge commit
 `d6afa8a3828ba4d8736d6df0e799a9249f83d559`. The integration suite composes
@@ -512,8 +513,10 @@ BaseAgent work is not drained by Runtime shutdown.
 
 Pytest emitted the known nonfatal Windows cache-provider WinError 183 warning for
 `.pytest_cache_temp`. The four unrelated working-tree changes remain preserved, and
-`uv.lock` remains unchanged. Task 2.11 is not committed or merged and awaits the
-separate commit approval gate.
+`uv.lock` remains unchanged. Implementation commit
+`20129d0c42c7eddaf17c99426cc2f94c21f3854c` was pushed to
+`origin/feat/2.11-integration-tests`. Draft PR #7 targets `main` and awaits review
+and merge. Task 2.11 has not been merged.
 
 ## Landing page publication to GitHub — 2026-10-26
 
