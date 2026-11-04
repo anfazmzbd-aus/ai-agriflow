@@ -37,8 +37,11 @@ reshaping the repository.
 resources can opt into `LifecycleComponent`, whose per-instance lock serializes
 initialize/start/stop transitions and whose hooks report failure by raising. It does
 not perform discovery or cross-component coordination. `ComponentManager` provides
-explicit dependency ordering and lifecycle coordination around this contract; Runtime
-integration remains a later composition step.
+explicit dependency ordering and lifecycle coordination around this contract. Runtime
+composes a manager with services, events, registry, settings, and telemetry, but does
+not discover components or inject application services automatically. Applications
+register lifecycle components and service instances explicitly and resolve/inject
+application dependencies themselves.
 
 `BaseAgent` opts into `LifecycleComponent`, requires `STARTED` as an execution
 admission check, and returns the raw typed result. It does not coordinate in-flight
