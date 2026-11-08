@@ -57,6 +57,62 @@ dev = [
 [project.scripts]
 agriflow = "apps.agriflow.main:app"
 
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/apps",
+  "/examples",
+  "/tests",
+  "/docs/adr",
+  "/docs/api",
+  "/docs/architecture",
+  "/docs/tutorials",
+  "/agriflow-nextjs",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+  "/pyproject.toml",
+  "/uv.lock",
+]
+exclude = [
+  "**/node_modules",
+  "**/node_modules/**",
+  "**/.next",
+  "**/.next/**",
+  "**/out",
+  "**/out/**",
+  "**/.turbo",
+  "**/.turbo/**",
+  "**/coverage",
+  "**/coverage/**",
+  "**/dist",
+  "**/dist/**",
+  "**/.venv",
+  "**/.venv/**",
+  "**/venv",
+  "**/venv/**",
+  "**/__pycache__",
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "**/*.pyo",
+  "**/.pytest_cache",
+  "**/.pytest_cache/**",
+  "**/.pytest_cache_temp",
+  "**/.pytest_cache_temp/**",
+  "**/.mypy_cache",
+  "**/.mypy_cache/**",
+  "**/.ruff_cache",
+  "**/.ruff_cache/**",
+  "**/.uv-cache",
+  "**/.uv-cache/**",
+  "**/.env",
+  "**/.env.*",
+  "**/*.pem",
+  "**/*.key",
+  "**/credentials.*",
+  "**/*-credentials.*",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/agentos", "apps"]
 
