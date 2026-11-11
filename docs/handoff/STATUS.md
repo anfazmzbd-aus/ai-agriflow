@@ -668,12 +668,19 @@ so it must be rebuilt from a clean, approved source revision after README reconc
 `pyproject.toml` and the existing release-preparation changes remain otherwise
 unchanged by this remediation.
 
-The release gate remains **NO-GO**: comprehensive advisory scanning was declined and
-remains outstanding; GitHub Actions has not run on these workflow changes; the README
-checkpoint conflict remains unresolved; the current dirty-tree sdist is not a release
-artifact; and final tag/publication approvals are outstanding. Historical Sprint 2
-results do not replace these checks. No tag, GitHub Release, package publication, or
-Sprint 3 work has been started.
+At this 2026-11-04 checkpoint, the release gate remained **NO-GO**: comprehensive advisory scanning was declined and outstanding; GitHub Actions had not run on these workflow changes; the README checkpoint conflict remained unresolved; the dirty-tree sdist was not a release artifact; and final tag/publication approvals were outstanding. This is a historical checkpoint; see the 2026-11-11 security remediation update below. No tag, GitHub Release, package publication, or Sprint 3 work had been started.
+
+## Task 2.12 — Critical certifi remediation and offline security verification — 2026-11-11
+
+This is a verified isolated patch at candidate baseline `a68db391027b5b242f96daad337ffa76d6556a54`; it is not yet transferred to or verified as a committed `release/sprint-2` revision. The new security worktree is `C:\Users\USER\AppData\Local\Temp\agentos-security-remediation-a68db391`. Its only intended changes are `uv.lock`, this file, and `docs/handoff/TASKS.md`. The original checkout and the separate README correction worktree remain untouched.
+
+The refreshed lock changes exactly one package record: `certifi` `2026.7.22` → `2026.10.23`. The prior version was affected by GHSA-6q48-6c7w-9gw2 / PYSEC-2026-4320, with affected versions below `2026.10.18`; `2026.10.23` is beyond that range. No dependency declarations, package count, or graph edges changed. The source isolated lockfile SHA-256 and transferred worktree lockfile SHA-256 are both `0FAC88D3F3C77C392DBCCEBB47E8DBEDE2B8AE81BC872F4E59F8D9EEA58CBA6A`. Baseline lock SHA-256 was `171152e784d72468ee33f580ab228003c6b0b74e0c1512f9f1cb6a6bea428512`.
+
+The local-only audit used verified OSV-Scanner v2.7.0 Windows x64 (SHA-256 `9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438`; SLSA provenance verified) and the official PyPI OSV archive at `https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip`. The refreshed snapshot was retrieved 2026-11-11; archive SHA-256 `13F7BEA3C98240F0C26BF4383D215BC13251DF414225F271DFCC02C14F35297F`; GCS MD5/CRC32C and ZIP integrity checks passed. Full offline mode used the local database. The scan exited 0 and reconciled all 82 third-party lock records (83 records including the project): zero missing, extra, duplicate, unsupported, or unmatched records and zero matched advisories. This result describes that snapshot and scanner coverage; it is not a guarantee against unknown advisories. No package inventory was sent to an external service. Full offline mode and restricted execution were used, but no independent firewall or packet-capture evidence was collected.
+
+The exact updated lock was verified in isolated copies on Python 3.13.14 and 3.14.0: each full suite passed (224 tests, 97.58% coverage), 29 integration tests passed, one E2E test passed, Ruff lint/format and MyPy passed, and offline sdist/wheel builds passed. The installed wheel was separately verified in a clean Python 3.14 environment: `uv pip check`, installed package imports/metadata, and both CLI invocations passed. These are isolated verification results, not results from the release branch.
+
+Current release status remains **NO-GO**. README reconciliation and its separate approval remain pending; this patch is uncommitted and has not been pushed; PR #8 CI must pass on the resulting head; merge, tag, and publication each require their own approval. No release or publication action has occurred.
 
 ## Landing page publication to GitHub — 2026-10-26
 
