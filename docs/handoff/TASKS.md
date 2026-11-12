@@ -12,8 +12,8 @@
 | 2.8 | Service container | Committed `168be89`; pushed; verified; merged as `779dae2` | Complete |
 | 2.9 | Component manager | Committed `f5f7224`; pushed; verified; merged as `26313e5` | Complete |
 | 2.10 | Runtime | Committed; pushed; verified; merged as `d6afa8a` | Complete |
-| 2.11 | Integration tests | Committed `20129d0c42c7eddaf17c99426cc2f94c21f3854c`; pushed and verified | Draft PR #7 awaiting review and merge |
-| 2.12 | Sprint release | Planned | Task-by-task approval |
+| 2.11 | Integration tests | Committed `20129d0c42c7eddaf17c99426cc2f94c21f3854c`; merged as `8daf6db6e7685ddc2ac2eaa278525f948d075705` | Complete; PR #7 CI passed before merge |
+| 2.12 | Sprint release | Release preparation and isolated certifi security patch verified; provisional `v0.1.0` Alpha | 82 third-party packages reconciled against refreshed offline OSV snapshot; Python 3.13/3.14 verification passed. Patch awaiting review/commit; README reconciliation, PR CI, merge, tag, and publication pending; release NO-GO |
 
 ## Task 2.9 acceptance criteria
 

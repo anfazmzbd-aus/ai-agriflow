@@ -1,7 +1,7 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.11 — Integration Testing and System Validation
+- Phase: Sprint 2, Task 2.12 — Release Preparation and Verification
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
@@ -17,8 +17,8 @@
 - Pull request: **#5** (`feat/2.9-component-manager` → `main`) — merged in `26313e5ea6229883d378f0b2be3ade1bdfe256f6`
 - Completed task: **2.10 Runtime Integration and Orchestration** — implementation commit `2b990a2d5d8ec4f7ee86af20f83b34156b041d34`, documentation commit `323def301b80b5f02105ab0c866391360a62f8e4`, merged as `d6afa8a3828ba4d8736d6df0e799a9249f83d559`
 - Pull request: **#6** (`feat/2.10-runtime` → `main`) — merged; GitHub Actions CI passed before merge
-- Completed task: **2.11 Integration Testing and System Validation** — committed as `20129d0c42c7eddaf17c99426cc2f94c21f3854c` and pushed to `origin/feat/2.11-integration-tests`
-- Pull request: **#7** (`feat/2.11-integration-tests` → `main`) — draft; awaiting review and merge
+- Completed task: **2.11 Integration Testing and System Validation** — committed as `20129d0c42c7eddaf17c99426cc2f94c21f3854c`, pushed, and merged into `main` as `8daf6db6e7685ddc2ac2eaa278525f948d075705`
+- Pull request: **#7** (`feat/2.11-integration-tests` → `main`) — merged; GitHub Actions CI passed before merge
 - Source fidelity: original user's local Git repository was not available; reconcile before merging.
 
 ## Task 2.3.2 implementation
@@ -465,7 +465,7 @@ Implementation commit `2b990a2d5d8ec4f7ee86af20f83b34156b041d34` was pushed to
 `323def301b80b5f02105ab0c866391360a62f8e4` was also pushed. PR #6 merged into
 `main` at `d6afa8a3828ba4d8736d6df0e799a9249f83d559` after CI passed.
 
-## Task 2.11 — Integration Testing and System Validation (implemented, verified, committed, and pushed; draft PR #7 awaiting review and merge)
+## Task 2.11 — Integration Testing and System Validation (implemented, verified, committed, pushed, and merged)
 
 Branch: `feat/2.11-integration-tests`, based on the Task 2.10 merge commit
 `d6afa8a3828ba4d8736d6df0e799a9249f83d559`. The integration suite composes
@@ -515,8 +515,172 @@ Pytest emitted the known nonfatal Windows cache-provider WinError 183 warning fo
 `.pytest_cache_temp`. The four unrelated working-tree changes remain preserved, and
 `uv.lock` remains unchanged. Implementation commit
 `20129d0c42c7eddaf17c99426cc2f94c21f3854c` was pushed to
-`origin/feat/2.11-integration-tests`. Draft PR #7 targets `main` and awaits review
-and merge. Task 2.11 has not been merged.
+`origin/feat/2.11-integration-tests`. The handoff correction commit
+`3c35088f8a6065204dc6a1f8b1472fac64ed4d6f` was also included in PR #7. PR #7 was
+merged into `main` at `8daf6db6e7685ddc2ac2eaa278525f948d075705` after GitHub Actions
+CI passed. The recorded test and coverage results above are historical Task 2.11
+verification, not fresh Task 2.12 release-candidate evidence.
+
+## Task 2.12 — Sprint 2 Release Preparation and Verification (in progress)
+
+Planning and implementation are limited to a provisional `v0.1.0` Alpha release.
+The release branch is `release/sprint-2`, based on merged Task 2.11 commit
+`8daf6db6e7685ddc2ac2eaa278525f948d075705`. No release tag or GitHub Release exists.
+The current package metadata remains version `0.1.0` and requires Python `>=3.13`.
+
+Release preparation updates the locked CI and tag-build workflows, adds the
+`CHANGELOG.md`, aligns the getting-started tutorial, reconciles this handoff, adds
+the explicit `health` CLI subcommand while preserving root invocation, and defines
+a constrained Hatchling sdist inclusion/exclusion policy.
+README correction was not applied because the needed checkpoint text overlaps the
+user's pre-existing uncommitted README changes; those edits remain preserved for
+separate review. `apps/agriflow/main.py` and its existing integration test were
+modified for the CLI correction. The Hatchling sdist configuration is the only
+change in `pyproject.toml`; the pre-existing pytest cache setting remains intact.
+Dependency declarations and `uv.lock` are unchanged.
+
+### Task 2.12 verification — working-tree candidate, Windows 11 / Python 3.14.0
+
+The candidate was `HEAD=8daf6db6e7685ddc2ac2eaa278525f948d075705` plus the
+uncommitted Task 2.12 release-preparation and blocker-remediation edits. The four
+pre-existing local modifications remain preserved. `uv.lock` did not change.
+
+- `uv --cache-dir .uv-cache sync --locked --extra dev`: PASS; 83 packages audited.
+  The sandboxed attempt could not reach PyPI for Hatchling; the same command passed
+  when run with network access. No dependency or lock changes resulted.
+- `uv --cache-dir .uv-cache run pytest -q`: PASS; 224 passed, 97.58% coverage
+  (80% minimum). Nonfatal pytest cache-provider WinError 183 warning persisted.
+- `uv --cache-dir .uv-cache run pytest tests/integration -q --no-cov`: PASS; 26
+  passed before CLI regression additions; 29 passed after the additions.
+- `uv --cache-dir .uv-cache run pytest tests/e2e -q --no-cov`: PASS; 1 passed.
+- `uv --cache-dir .uv-cache run pytest tests/integration/test_agriflow_cli.py -q
+  --no-cov`: PASS; 4 passed, covering root invocation, `health`, help, and invalid
+  command behavior.
+- Five separate runs of `tests/integration/test_runtime_concurrency.py`: PASS; 6
+  tests each run (30 successful executions). Each run emitted the same nonfatal
+  pytest cache warning.
+- `uv --cache-dir .uv-cache run ruff check .`: PASS.
+- `uv --cache-dir .uv-cache run ruff format --check .`: PASS; 90 files formatted.
+- `uv --cache-dir .uv-cache run mypy src`: PASS; 39 source files.
+- `uv --cache-dir .uv-cache build --offline`: PASS; sdist and wheel built.
+- `uv --cache-dir .uv-cache lock --check`: PASS; 83 packages resolved.
+- `uv --cache-dir .uv-cache run agriflow`: PASS; prints the existing health output.
+- `uv --cache-dir .uv-cache run agriflow health`: PASS; prints the same output.
+- `uv --cache-dir .uv-cache run agriflow --help`: PASS; lists `health`.
+- Installed-wheel public imports and CLI: PASS in a fresh temporary Python 3.14
+  environment outside the checkout; imported `agentos` and `apps.agriflow` paths
+  resolve from that environment's `site-packages`. Both `agriflow` and
+  `agriflow health` work, and help lists the subcommand. `uv run` emitted its
+  expected warning that no project was present in the isolated directory.
+- Wheel metadata inspection: PASS for name `agentos-agriflow`, version `0.1.0`,
+  Python requirement `>=3.13`, and entry point
+  `agriflow = apps.agriflow.main:app`. The wheel contained 40 AgentOS and 4 app
+  files. Installed distribution metadata and console entry point matched.
+- Sdist inspection: reduced from 2,926 members to 105. `node_modules`, frontend
+  build output, virtual environments, caches, `.env*`, key, and credentials-pattern
+  files were absent. Required Python packages, examples, docs, frontend source,
+  packaging metadata, changelog, and lockfile remained present. Both `.env.example`
+  templates were locally inspected; sensitive-like settings were empty and neither
+  template was packaged. The root README in this sdist matches the current local
+  README edits, not committed `HEAD`; because those user-owned changes were excluded
+  from this task, this dirty-tree archive is not a release artifact. Rebuild from a
+  clean, approved source revision after resolving the README conflict. No credential
+  values were printed.
+- `uv --cache-dir .uv-cache lock --check`: PASS; 83 packages resolved.
+- Scoped `git diff --check`: PASS. Git reported only expected LF-to-CRLF working
+  copy notices; the unrelated `AGENTS.md` whitespace warning is preserved.
+- GitHub Actions execution remains pending until the branch is pushed and a PR is
+  opened.
+
+### Targeted dependency remediation and security review — 2026-11-04
+
+The four approved packages were upgraded using targeted `uv lock --upgrade-package`
+options. No dependency declarations in `pyproject.toml` were changed. The resolver
+changed exactly seven lock entries:
+
+- `langgraph`: `1.2.10` → `1.2.19` (direct runtime dependency; requested advisory fix).
+- `langgraph-sdk`: `0.4.2` → `0.4.12` (transitive runtime dependency of LangGraph;
+  requested advisory fix).
+- `urllib3`: `2.7.0` → `2.8.0` (transitive runtime dependency via Requests / LangSmith;
+  requested advisory fix).
+- `pydantic`: `2.13.4` → `2.14.2` (direct runtime dependency; requested advisory fix).
+- `langgraph-checkpoint`: `4.1.1` → `4.3.1` (transitive runtime dependency required
+  by the selected LangGraph release).
+- `pydantic-core`: `2.46.4` → `2.50.2` and `typing-inspection`: `0.4.2` → `0.4.5`
+  (transitive runtime dependencies required by Pydantic 2.14.2).
+
+The project requires Python `>=3.13`. The locked dependency graph resolves for both
+Python 3.13 and 3.14 via `uv tree --locked --python-version`; the available test and
+isolated wheel environment is Python 3.14.0. No Python 3.13 interpreter was used for
+execution verification.
+
+Manual review of maintainer advisories for the approved package set and directly
+related LangChain/LangGraph dependencies found:
+
+- The original High urllib3 HTTPS proxy TLS advisory
+  ([GHSA-8988-9cw3-xx77](https://github.com/advisories/GHSA-8988-9cw3-xx77)), the
+  High unbounded streaming chunk-size advisory
+  ([GHSA-vxq7-64xx-v4gw](https://github.com/advisories/GHSA-vxq7-64xx-v4gw)), and
+  Moderate chunked-Deflate loop advisory
+  ([GHSA-gh4c-6fx4-qh6g](https://github.com/advisories/GHSA-gh4c-6fx4-qh6g)) are
+  fixed by 2.8.0. The High conditions concern HTTPS proxy TLS configuration or
+  unbounded streaming input; the patched version is in the lock.
+- The original Moderate LangGraph SDK streaming advisory
+  ([GHSA-3fx2-cqw9-xr3c](https://github.com/advisories/GHSA-3fx2-cqw9-xr3c)) is
+  fixed by SDK 0.4.6 and LangGraph 1.2.14; selected versions are 0.4.12 and 1.2.19.
+  A separate High SDK custom-auth advisory
+  ([GHSA-fvww-7h3r-vfhp](https://github.com/advisories/GHSA-fvww-7h3r-vfhp)) affected
+  versions through 0.4.3 and was fixed in 0.4.4; 0.4.12 is outside that range.
+- The LangGraph checkpoint JSON-deserialization advisory is fixed in
+  `langgraph-checkpoint>=4.1.1`; the unsafe msgpack/cache advisories are fixed at
+  versions below the selected 4.3.1. The separate Postgres/SQLite checkpoint store
+  packages covered by the namespace advisory are absent from this lock.
+- `langchain-core==1.5.3` is above the patched versions for the reviewed High
+  deserialization ([GHSA-pjwx-r37v-7724](https://github.com/advisories/GHSA-pjwx-r37v-7724))
+  and legacy prompt path-traversal
+  ([GHSA-qh6h-p6c9-ff54](https://github.com/advisories/GHSA-qh6h-p6c9-ff54))
+  advisories. Those code paths require attacker-controlled serialized inputs or
+  legacy prompt file paths; no conclusion is made about all possible dependency
+  behavior.
+- Pydantic 2.14.2 is the published fix for the identified Moderate extra-data
+  ([GHSA-qpmf-fgh3-ff25](https://github.com/advisories/GHSA-qpmf-fgh3-ff25)), aliased
+  TypedDict/dataclass ([GHSA-3r8g-cqwr-jr29](https://github.com/advisories/GHSA-3r8g-cqwr-jr29)),
+  Pydantic V1 dataclass ([GHSA-r49w-vh47-r4hf](https://github.com/advisories/GHSA-r49w-vh47-r4hf)),
+  `unique_items` ([GHSA-49g6-96jj-f7r9](https://github.com/advisories/GHSA-49g6-96jj-f7r9)),
+  and duration validation ([GHSA-jfv7-ghgv-gx4x](https://github.com/advisories/GHSA-jfv7-ghgv-gx4x))
+  advisories. The Fraction exponent and multi-host URL issues were fixed in 2.14.0,
+  also included in 2.14.2.
+- `pydantic-settings==2.14.2` remains at the fix for its nested-secrets symlink
+  advisory; the affected settings source is not used by this application.
+
+The updated graph was resolved and tested, and no Critical or High advisory was
+identified in the manually reviewed packages at their selected versions. This is
+not a full inventory scan: the user declined transmitting the 83-package inventory
+to an external advisory service, and no local advisory database/tool was available.
+Consequently, severity counts, remaining findings, and false-positive dispositions
+for all locked packages are unavailable. Do not represent this lock as comprehensively
+security-cleared.
+
+The targeted update was limited to the four authorized packages and resolver-required
+transitives; there were no unexpected major-version changes. The wheel and sdist were
+rebuilt offline. The sdist still contains the preserved uncommitted README content,
+so it must be rebuilt from a clean, approved source revision after README reconciliation.
+`pyproject.toml` and the existing release-preparation changes remain otherwise
+unchanged by this remediation.
+
+At this 2026-11-04 checkpoint, the release gate remained **NO-GO**: comprehensive advisory scanning was declined and outstanding; GitHub Actions had not run on these workflow changes; the README checkpoint conflict remained unresolved; the dirty-tree sdist was not a release artifact; and final tag/publication approvals were outstanding. This is a historical checkpoint; see the 2026-11-11 security remediation update below. No tag, GitHub Release, package publication, or Sprint 3 work had been started.
+
+## Task 2.12 — Critical certifi remediation and offline security verification — 2026-11-11
+
+This is a verified isolated patch at candidate baseline `a68db391027b5b242f96daad337ffa76d6556a54`; it is not yet transferred to or verified as a committed `release/sprint-2` revision. The new security worktree is `C:\Users\USER\AppData\Local\Temp\agentos-security-remediation-a68db391`. Its only intended changes are `uv.lock`, this file, and `docs/handoff/TASKS.md`. The original checkout and the separate README correction worktree remain untouched.
+
+The refreshed lock changes exactly one package record: `certifi` `2026.7.22` → `2026.10.23`. The prior version was affected by GHSA-6q48-6c7w-9gw2 / PYSEC-2026-4320, with affected versions below `2026.10.18`; `2026.10.23` is beyond that range. No dependency declarations, package count, or graph edges changed. The source isolated lockfile SHA-256 and transferred worktree lockfile SHA-256 are both `0FAC88D3F3C77C392DBCCEBB47E8DBEDE2B8AE81BC872F4E59F8D9EEA58CBA6A`. Baseline lock SHA-256 was `171152e784d72468ee33f580ab228003c6b0b74e0c1512f9f1cb6a6bea428512`.
+
+The local-only audit used verified OSV-Scanner v2.7.0 Windows x64 (SHA-256 `9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438`; SLSA provenance verified) and the official PyPI OSV archive at `https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip`. The refreshed snapshot was retrieved 2026-11-11; archive SHA-256 `13F7BEA3C98240F0C26BF4383D215BC13251DF414225F271DFCC02C14F35297F`; GCS MD5/CRC32C and ZIP integrity checks passed. Full offline mode used the local database. The scan exited 0 and reconciled all 82 third-party lock records (83 records including the project): zero missing, extra, duplicate, unsupported, or unmatched records and zero matched advisories. This result describes that snapshot and scanner coverage; it is not a guarantee against unknown advisories. No package inventory was sent to an external service. Full offline mode and restricted execution were used, but no independent firewall or packet-capture evidence was collected.
+
+The exact updated lock was verified in isolated copies on Python 3.13.14 and 3.14.0: each full suite passed (224 tests, 97.58% coverage), 29 integration tests passed, one E2E test passed, Ruff lint/format and MyPy passed, and offline sdist/wheel builds passed. The installed wheel was separately verified in a clean Python 3.14 environment: `uv pip check`, installed package imports/metadata, and both CLI invocations passed. These are isolated verification results, not results from the release branch.
+
+Current release status remains **NO-GO**. README reconciliation and its separate approval remain pending; this patch is uncommitted and has not been pushed; PR #8 CI must pass on the resulting head; merge, tag, and publication each require their own approval. No release or publication action has occurred.
 
 ## Landing page publication to GitHub — 2026-10-26
 

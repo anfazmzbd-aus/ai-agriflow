@@ -6,7 +6,7 @@ from agentos.core.config import AgentOSSettings
 from agentos.runtime import Runtime
 from apps.agriflow.config import AgriFlowSettings
 
-app = typer.Typer(help="AgriFlow application CLI.")
+app = typer.Typer(help="AgriFlow application CLI.", invoke_without_command=True)
 
 
 @app.command()
@@ -17,6 +17,13 @@ def health() -> None:
         AgentOSSettings(environment=settings.environment, log_level=settings.log_level)
     ).start()
     typer.echo(f"{settings.app_name} is healthy in {settings.environment}")
+
+
+@app.callback()
+def main(ctx: typer.Context) -> None:
+    """Keep the legacy root command while also exposing ``health`` explicitly."""
+    if ctx.invoked_subcommand is None:
+        health()
 
 
 if __name__ == "__main__":
