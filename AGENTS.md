@@ -4,7 +4,7 @@
 Build AgentOS, a reusable Python DAG-based AI agent runtime, with AgriFlow as its Sri Lankan agriculture/climate-resilience reference application. Keep the framework independent of the application and of LangGraph-specific APIs; use adapters.
 
 ## Current checkpoint
-Sprint 2, Task 2.3.1 (`ExecutionStatus`) is the handoff baseline. **Next proposed task: 2.3.2 `ExecutionResult[T]`.** This repository contains a reconstructed baseline, not an import of the user's original local repository. Inspect and reconcile any existing implementation before applying changes.
+Sprint 2 Tasks 2.3.2 through 2.12 are complete at their recorded checkpoints. The v0.1.0 Alpha is published as a GitHub pre-release at https://github.com/anfazmzbd-aus/ai-agriflow/releases/tag/v0.1.0; tag and main target 073bfb796e473715f1b42f99aa32afe32fdfda1c. Task 2.13 is authorized for documentation-only post-release handoff and preparation of a Sprint 3 draft plan. Sprint 3 is proposed, not started; implementation is not authorized. This remains a reconstructed baseline, not an authoritative import of the user's original repository.
 
 ## Mandatory gated workflow
 1. Read `docs/handoff/STATUS.md`, `docs/handoff/TASKS.md`, and inspect `git status` and recent commits.

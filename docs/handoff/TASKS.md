@@ -13,7 +13,8 @@
 | 2.9 | Component manager | Committed `f5f7224`; pushed; verified; merged as `26313e5` | Complete |
 | 2.10 | Runtime | Committed; pushed; verified; merged as `d6afa8a` | Complete |
 | 2.11 | Integration tests | Committed `20129d0c42c7eddaf17c99426cc2f94c21f3854c`; merged as `8daf6db6e7685ddc2ac2eaa278525f948d075705` | Complete; PR #7 CI passed before merge |
-| 2.12 | Sprint release | Release preparation and isolated certifi security patch verified; provisional `v0.1.0` Alpha | 82 third-party packages reconciled against refreshed offline OSV snapshot; Python 3.13/3.14 verification passed. Patch awaiting review/commit; README reconciliation, PR CI, merge, tag, and publication pending; release NO-GO |
+| 2.12 | Sprint release | Complete — published and verified | GitHub pre-release v0.1.0, Release ID 443538987; tag target and main are 073bfb796e473715f1b42f99aa32afe32fdfda1c; workflow 43287980180 passed; two assets SHA-256 verified. See post-release closure in STATUS.md. |
+| 2.13 | Post-release handoff documentation | In progress — documentation and Sprint 3 draft plan only | Verify published release evidence, reconcile STATUS/README/AGENTS, and prepare a plan clearly marked DRAFT — NOT APPROVED. Commit/push/PR not authorized. |
 
 ## Task 2.9 acceptance criteria
 
@@ -33,3 +34,11 @@
 - No shared mutable metadata defaults; predictable error handling.
 - Positive/negative/boundary tests, type checking, public exports, usage example and docs.
 - All applicable checks pass, results documented; user reviews before commit.
+
+## Sprint 2 closure
+
+Sprint 2 is administratively closed after publication of the v0.1.0 Alpha GitHub pre-release. This does not authorize implementation work in Sprint 3.
+
+## Sprint 3 proposal
+
+Sprint 3 is **proposed, not started**. The initial backlog is in [SPRINT-3-PLAN.md](SPRINT-3-PLAN.md), marked DRAFT — NOT APPROVED. Each numbered task requires a separate planning/implementation authorization and its own verification and commit gate.

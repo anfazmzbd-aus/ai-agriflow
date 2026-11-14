@@ -1,7 +1,7 @@
 # Handoff status
 
 - Project: AgentOS framework + AgriFlow application
-- Phase: Sprint 2, Task 2.12 — Release Preparation and Verification
+- Phase: Sprint 2 administrative closure — Task 2.13 post-release handoff documentation
 - Baseline task: **2.3.1 ExecutionStatus** (reconstructed implementation)
 - Completed task: **2.3.2 ExecutionResult[T]** — committed as `9c79638`; user-verified
 - Completed task: **2.3.3 Core Exception Hierarchy** — committed; user-verified
@@ -521,7 +521,7 @@ merged into `main` at `8daf6db6e7685ddc2ac2eaa278525f948d075705` after GitHub Ac
 CI passed. The recorded test and coverage results above are historical Task 2.11
 verification, not fresh Task 2.12 release-candidate evidence.
 
-## Task 2.12 — Sprint 2 Release Preparation and Verification (in progress)
+## Task 2.12 — Sprint 2 Release Preparation and Verification (historical pre-release record)
 
 Planning and implementation are limited to a provisional `v0.1.0` Alpha release.
 The release branch is `release/sprint-2`, based on merged Task 2.11 commit
@@ -680,7 +680,7 @@ The local-only audit used verified OSV-Scanner v2.7.0 Windows x64 (SHA-256 `9964
 
 The exact updated lock was verified in isolated copies on Python 3.13.14 and 3.14.0: each full suite passed (224 tests, 97.58% coverage), 29 integration tests passed, one E2E test passed, Ruff lint/format and MyPy passed, and offline sdist/wheel builds passed. The installed wheel was separately verified in a clean Python 3.14 environment: `uv pip check`, installed package imports/metadata, and both CLI invocations passed. These are isolated verification results, not results from the release branch.
 
-Current release status remains **NO-GO**. README reconciliation and its separate approval remain pending; this patch is uncommitted and has not been pushed; PR #8 CI must pass on the resulting head; merge, tag, and publication each require their own approval. No release or publication action has occurred.
+Historical checkpoint (2026-11-11): release status was **NO-GO** while README reconciliation, PR CI, merge, tag, and publication approvals were still pending. This pre-release status is superseded by the post-release closure entry below.
 
 ## Landing page publication to GitHub — 2026-10-26
 
@@ -709,3 +709,47 @@ Current cloud verification (all exit 0):
 
 Only the landing-page files and this evidence entry are included in this change.
 No credentials or generated build/dependency directories are included.
+
+## Sprint 2 administrative closure — Task 2.13 — 2026-11-13
+
+**Authoritative post-release status:** Sprint 2 is complete. Task 2.12 v0.1.0 Alpha is published as a GitHub pre-release. No package was published to PyPI or another registry. The release is not production-ready. Earlier pre-release NO-GO entries above are historical checkpoints and are retained as such.
+
+### Merge and governance evidence
+
+- PR [#8 — Sprint 2 v0.1.0 Alpha Release Candidate](https://github.com/anfazmzbd-aus/ai-agriflow/pull/8) merged into main using a standard merge commit.
+- Approved PR head: 77b9d105779ef8919b1bc3b7a34bb318f2118a19.
+- Merge commit and current main: 073bfb796e473715f1b42f99aa32afe32fdfda1c.
+- The owner-verified GitHub merge record reported branch protection enabled; CI passed before merge. No force-push or history rewrite was used.
+- Annotated tag v0.1.0 has tag-object SHA da4a6f780549a3655c28fcd7c84a44102d0a34ad and peels to 073bfb796e473715f1b42f99aa32afe32fdfda1c.
+
+### Published release and assets
+
+- [AgentOS AgriFlow v0.1.0 Alpha](https://github.com/anfazmzbd-aus/ai-agriflow/releases/tag/v0.1.0), GitHub Release ID 443538987; published 2026-11-12 21:39:16 UTC, draft=false, prerelease=true, excluded from Latest.
+- Release workflow 43287980180 completed successfully on target commit 073bfb796e473715f1b42f99aa32afe32fdfda1c.
+- Exactly two distribution assets are attached. Their hashes were verified against the workflow-produced artifacts and again after release download:
+  - agentos_agriflow-0.1.0-py3-none-any.whl — SHA-256 b7660f710d00f33d9cd6f5d6182a5e12d41130ad7f9939a3e370aadde9a00d03 (32,680 bytes).
+  - agentos_agriflow-0.1.0.tar.gz — SHA-256 bc773695d11422be3413cd333b919890f1a49539ebcff8a4dcb3e297c15f743a (164,812 bytes).
+- No release asset was rebuilt or substituted for publication.
+
+### Verification evidence and execution contexts
+
+- **GitHub Actions:** Release workflow 43287980180 ran the tagged revision on Python 3.13, passed its verify-and-build job, and uploaded the review artifact. The recorded clean-source candidate matrix reports 224 tests passed at 97.58% coverage, 29 integration tests, one E2E test, Ruff lint/format, MyPy, and offline sdist/wheel build on Python 3.13.14 and Python 3.14.0. The earlier handoff records the matrix as run in isolated environments but does not preserve an executor attribution for each matrix row; do not retroactively label those rows USER-EXECUTED or CODEX-EXECUTED.
+- **Tagged wheel acceptance — CODEX-EXECUTED:** Installed the exact published wheel in a fresh isolated Windows CPython 3.14.0 environment using hash-checked, lock-constrained runtime dependencies. Distribution metadata reported version 0.1.0; certifi was 2026.10.23; uv pip check passed with 47 packages. agentos and apps.agriflow resolved from the temporary environment's site-packages. agriflow, agriflow health, and agriflow --help each exited 0. The downloaded wheel and sdist hashes matched the values above.
+- **Earlier candidate checks:** The 224-test / 97.58% results, 80% minimum coverage gate, 29 integration tests, one E2E test, Ruff, formatting, MyPy, and offline build remain historical candidate verification evidence. They are not a newly rerun post-publication suite.
+
+### Security audit scope and limits
+
+The local offline OSV-Scanner v2.7.0 scan on 2026-11-11 used a refreshed official PyPI advisory snapshot and the exact candidate lockfile. It reconciled 82 of 82 third-party package records and reported zero matched advisories for that database snapshot and scanner coverage. The audit did not establish absence of unknown, unpublished, or future advisories; the manual advisory review was also scoped, not comprehensive. Full offline mode was used, but no independent firewall or packet-capture evidence was collected. No dependency inventory was sent to an external service. Continue routine advisory monitoring and targeted dependency maintenance.
+
+### Remaining limitations and maintenance
+
+- AgentOS is an early-stage framework; AgriFlow is a reference application, not a production agriculture platform.
+- Runtime does not drain in-flight BaseAgent executions; public service and manager references can be reassigned, breaking core service-binding identity.
+- Direct ComponentManager lifecycle calls bypass Runtime serialization and telemetry. Cancellation can interrupt cleanup, and stopping a LifecycleComponent from NEW skips its stop hook.
+- Event delivery is in-process and fail-fast; concurrent publications may interleave. Event payload objects are not deep-frozen, so consumers must treat shared payload data as immutable during dispatch.
+- ServiceContainer does not initialize, stop, or dispose registered services. The wheel includes agentos and apps; docs and examples remain in the sdist or repository.
+- Durable workflows, distributed orchestration, and production agricultural integrations are not included.
+
+### Sprint status
+
+Sprint 2 Tasks 2.3.2 through 2.12 are complete at the recorded integration/release checkpoints; the reconstructed 2.3.1 baseline caveat remains. Task 2.13 is this documentation-only administrative handoff and draft-plan preparation. Sprint 3 is proposed only; no Sprint 3 implementation is authorized or started.

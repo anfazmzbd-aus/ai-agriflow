@@ -1,5 +1,5 @@
 site_name: AgentOS AgriFlow
-site_description: Production-ready agent framework and AgriFlow application.
+site_description: Early-stage AgentOS framework and AgriFlow reference application — v0.1.0 Alpha.
 repo_name: agentos-agriflow
 theme:
   name: material

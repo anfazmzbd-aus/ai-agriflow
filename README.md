@@ -6,7 +6,8 @@ product.
 
 ## Version
 
-Current candidate version: `0.1.0` (Alpha). It is not yet tagged or published.
+Current release: [0.1.0 Alpha GitHub pre-release](https://github.com/anfazmzbd-aus/ai-agriflow/releases/tag/v0.1.0).
+It is an early-stage release, not production-ready.
 
 ## Stack
 
@@ -40,14 +41,14 @@ uv run agriflow health
 
 ## Sprint 2 and Release Status
 
-As of 2026-11-11, Sprint 2 Task 2.11 is merged into `main`; Task 2.12 is the current
-release-preparation task. Draft [PR #8](https://github.com/anfazmzbd-aus/ai-agriflow/pull/8)
-contains the `v0.1.0` Alpha candidate. The critical certifi fix updates `2026.7.22` to
-`2026.10.23`. An offline OSV scan of the refreshed 2026-11-11 PyPI snapshot reconciled
-all 82 third-party locked packages and found no matching advisories. GitHub Actions passed
-for security commit `119670afc9ec68a643c40808884f29a7e27406ab`. PR review/merge and separate
-release approvals remain pending; the version is not tagged or published and is not
-production-ready.
+As of 2026-11-13, Sprint 2 is complete and the v0.1.0 Alpha is published as a GitHub
+pre-release. [PR #8](https://github.com/anfazmzbd-aus/ai-agriflow/pull/8) merged to
+main; release tag v0.1.0 targets
+073bfb796e473715f1b42f99aa32afe32fdfda1c. The critical certifi fix updates
+2026.7.22 to 2026.10.23. The 2026-11-11 offline OSV scan reconciled all 82
+third-party locked packages and found no matching advisories in that database snapshot;
+this is not a guarantee against unknown or future advisories. The release is not
+production-ready. Sprint 3 remains proposed and has not started.
 
 ## Known Limitations
 
