@@ -29,6 +29,10 @@ class WorkflowError(ComponentError):
     """Raised when workflow execution fails."""
 
 
+class WorkflowGraphError(WorkflowError):
+    """Raised when workflow graph declarations fail validation."""
+
+
 class AgentError(ComponentError):
     """Raised when agent execution fails."""
 

@@ -13,8 +13,10 @@
 | 2.9 | Component manager | Committed `f5f7224`; pushed; verified; merged as `26313e5` | Complete |
 | 2.10 | Runtime | Committed; pushed; verified; merged as `d6afa8a` | Complete |
 | 2.11 | Integration tests | Committed `20129d0c42c7eddaf17c99426cc2f94c21f3854c`; merged as `8daf6db6e7685ddc2ac2eaa278525f948d075705` | Complete; PR #7 CI passed before merge |
-| 2.12 | Sprint release | Complete — published and verified | GitHub pre-release v0.1.0, Release ID 443538987; tag target and main are 073bfb796e473715f1b42f99aa32afe32fdfda1c; workflow 43287980180 passed; two assets SHA-256 verified. See post-release closure in STATUS.md. |
-| 2.13 | Post-release handoff documentation | In progress — documentation and Sprint 3 draft plan only | Verify published release evidence, reconcile STATUS/README/AGENTS, and prepare a plan clearly marked DRAFT — NOT APPROVED. Commit/push/PR not authorized. |
+| 2.12 | Sprint release | Complete — published and verified | GitHub pre-release v0.1.0, Release ID 443538987; tag target is 073bfb796e473715f1b42f99aa32afe32fdfda1c; workflow 43287980180 passed; two assets SHA-256 verified. See post-release closure in STATUS.md. |
+| 2.13 | Post-release handoff documentation | Complete — PR #9 merged | Main merge commit cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf. |
+| 3.1 | Workflow graph model and validation | Implemented and technically verified on Windows; not committed | Pending final diff review and explicit staging/commit authorization. See STATUS.md for GUI/CLI evidence provenance. |
+| 3.2 | Workflow execution context and node contract | Not started; unauthorized | Requires separate task-specific authorization after Task 3.1; commit approval for 3.1 does not authorize 3.2. |
 
 ## Task 2.9 acceptance criteria
 
@@ -41,4 +43,6 @@ Sprint 2 is administratively closed after publication of the v0.1.0 Alpha GitHub
 
 ## Sprint 3 proposal
 
-Sprint 3 is **proposed, not started**. The initial backlog is in [SPRINT-3-PLAN.md](SPRINT-3-PLAN.md), marked DRAFT — NOT APPROVED. Each numbered task requires a separate planning/implementation authorization and its own verification and commit gate.
+**Historical planning checkpoint:** Sprint 3 was **proposed, not started** at the Task 2.13 closure. The initial backlog remains in [SPRINT-3-PLAN.md](SPRINT-3-PLAN.md), marked DRAFT — NOT APPROVED.
+
+**Current checkpoint (2026-11-16):** Task 3.1 received separate architecture and implementation authorization and is implemented and technically verified, pending final diff review and commit authorization. The baseline remains `cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf`, with detached HEAD. The nine-path candidate excludes the known generated `site/` output. Task 3.2 has not started and requires separate authorization. Each numbered task retains its own planning/implementation, verification, and commit gates; Task 3.1 approval does not approve the rest of the draft plan.

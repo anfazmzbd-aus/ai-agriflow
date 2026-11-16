@@ -25,8 +25,13 @@ reshaping the repository.
   agent, plus a generic lifecycle-aware `BaseAgent` for typed async execution.
 - `memory` provides an in-process memory store.
 - `models` defines chat request/response primitives and a deterministic echo model.
-- `workflows` runs ordered asynchronous workflow steps.
+- `workflows` runs ordered asynchronous workflow steps and validates immutable DAG topology.
 - `adapters` defines the LangGraph adapter boundary.
+
+Workflow graphs describe prerequisites between graph-local node IDs. Graph validation
+and ordering are synchronous and independent of the runtime and lifecycle manager.
+The ready node declared earliest is selected at every topological step. Component
+dependencies continue to govern lifecycle startup and shutdown independently.
 - `telemetry` records structured runtime events.
 - `runtime` composes settings, events, registry, telemetry, typed services, and the
   component lifecycle manager.
