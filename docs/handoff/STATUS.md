@@ -753,3 +753,164 @@ The local offline OSV-Scanner v2.7.0 scan on 2026-11-11 used a refreshed officia
 ### Sprint status
 
 Sprint 2 Tasks 2.3.2 through 2.12 are complete at the recorded integration/release checkpoints; the reconstructed 2.3.1 baseline caveat remains. Task 2.13 is this documentation-only administrative handoff and draft-plan preparation. Sprint 3 is proposed only; no Sprint 3 implementation is authorized or started.
+
+## Sprint 3 — Task 3.1 workflow graph model and validation
+
+### Historical Debian checkpoint — superseded by the Windows checkpoint below
+
+Architecture and implementation were approved. The implementation is pending
+locked verification and separate commit approval. It adds an immutable DAG,
+declaration-order topological sorting, and `WorkflowGraphError`. The existing
+linear runner, lifecycle dependency handling, runtime, and adapter are outside
+the change.
+
+- Baseline: GitHub `main` at `cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf`.
+  The isolated shallow checkout was reconstructed from GitHub and its commit and
+  tree hashes matched. The original Windows checkout was outside this session.
+- Codex execution context: Debian 13, CPython 3.13.5, uv 0.13.6.
+  `uv run --locked --no-sync python --version` exited 0.
+- `uv sync --locked --extra dev --offline` exited 2 because a locked artifact
+  was absent from the uv cache. An online retry with `UV_HTTP_TIMEOUT=6` and
+  `UV_HTTP_RETRIES=0` exited 2 after timing out on a locked wheel download.
+- `uv run --locked --no-sync pytest -q --no-cov tests/unit/workflows tests/unit/adapters tests/unit/manager`
+  and `uv run --locked --no-sync pytest -q` both exited 2 because pytest was
+  unavailable. No current coverage measurement is available.
+- `uv run --locked --no-sync ruff check .`, `uv run --locked --no-sync ruff format --check .`,
+  `uv run --locked --no-sync mypy src`, `uv run --locked --no-sync mypy`, and
+  `uv run --locked --no-sync mkdocs build --strict` each exited 2 because the
+  corresponding executable was unavailable.
+- `uv build --offline` exited 2 because Hatchling was absent from the cache.
+  No wheel was produced for the installed-wheel import check.
+- A standard-library smoke harness run with `uv run --locked --no-sync python -`
+  exited 0. It used the actual workflow and base subpackages with a temporary root
+  package namespace to bypass the unavailable configuration dependencies. A
+  brute-force permutation oracle covered all 4,096 loop-free directed graphs on
+  four labeled nodes, accepting 543 DAGs in the expected order and rejecting
+  3,553 cyclic graphs. The harness also passed deep-chain, deep-cycle, malformed
+  input, immutability, safe diagnostics, linear example, and adapter checks.
+- `uv run --locked --no-sync python -m compileall -q src apps tests` and
+  `git diff --check` exited 0.
+
+### Current Windows checkpoint — verified candidate, not committed — 2026-11-16
+
+Task 3.1 is implemented and technically verified, pending final diff review and
+explicit staging/commit authorization. Task 3.2 has not started and remains
+unauthorized. The earlier Debian results above are historical environment results,
+superseded for candidate acceptance by the Windows evidence below; they have been
+preserved rather than represented as successful runs.
+
+The candidate is in `E:\Projects\ai-agriflow-task-3.1`, with detached HEAD at
+`cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf`. It introduces graph declarations,
+immutable validated DAG topology, deterministic declaration-order topological
+sorting, and the public graph exception. No DAG execution, runtime/lifecycle
+integration, application coupling, dependency declaration, or lockfile change is
+included. Existing linear workflow APIs remain available.
+
+#### Verification provenance
+
+- **CODEX GUI — completed Windows checks, supplied by the user:** CPython 3.14.0;
+  process-local `UV_CACHE_DIR=E:\Projects\.uv-cache-agentos`. Focused graph tests:
+  **27 passed**; full suite: **251 passed**; repository coverage: **97.87%**, above
+  the configured **80%** gate; graph module coverage: **100%**. Ruff lint,
+  formatting, MyPy, and strict MkDocs passed. Hatchling **1.33.0** was recovered
+  under the declared `hatchling>=1.25` build requirement; offline wheel and sdist
+  builds and installed-wheel acceptance succeeded. These are GUI-executed results,
+  not tests rerun by Codex CLI. Raw test, coverage, quality-check, backend-recovery,
+  and build command logs were not inspected by CLI; exact commands, exit codes,
+  timings, and build-warning text are not inferred from the reported passes.
+- **GUI acceptance evidence inspected by CODEX CLI:**
+  `C:\Users\USER\AppData\Local\Temp\agentos-task31-packaging-2f444f63bfc54881ae3fc1df74231254\acceptance-report.json`
+  and its `verify_candidate.py` script. The report records isolated Windows
+  CPython 3.14.0 imports from `wheel-env\Lib\site-packages`, package metadata
+  `agentos-agriflow==0.1.0` / Python `>=3.13`, and all 47 installed distribution
+  versions matching approved lock records. It records valid archives (50 wheel
+  members, 107 sdist members), selected candidate-byte comparisons, typing marker
+  and source/test inclusion, and generated/credential-pattern exclusions.
+  The positive graph order is `metrics, database, consumer, cache`; the negative
+  cycle raises `WorkflowGraphError`. `agriflow`, `agriflow health`, and
+  `agriflow --help` each have recorded exit code 0 and empty stderr.
+  Dependency consistency passed according to the GUI handoff; the JSON records
+  lock alignment but does not contain a separate dependency-check command log.
+- **CODEX CLI — independent read-only verification:** all nine pre-edit candidate
+  SHA-256 fingerprints matched the previously recorded values; HEAD matched the
+  exact baseline; staging was empty; `pyproject.toml` and `uv.lock` were unchanged.
+  CLI independently recalculated the wheel and sdist hashes and matched them to
+  both the inspected report and user-provided values. CLI inspected the report
+  and script without rerunning the GUI acceptance script or implementation tests.
+  Earlier local availability probes returned Python 3.14.0, `LOCAL_EXECUTION_OK`,
+  and pytest 9.1.1 using the process-local alternative cache.
+
+#### CODEX CLI handoff documentation verification
+
+With process-local `UV_CACHE_DIR=E:\Projects\.uv-cache-agentos` and
+`PYTHONDONTWRITEBYTECODE=1`, CLI ran
+`uv run --locked --no-sync --offline mkdocs build --strict --site-dir <temporary-output>`.
+The first post-edit run exited 0, writing to
+`C:\Users\USER\AppData\Local\Temp\agentos-task31-handoff-docs-b1f7fcb2f4cf49bead7cc67464e2acd5`.
+The command output was inspected directly. It printed a Material for MkDocs
+advisory banner about future MkDocs 2.0 compatibility and INFO notices for pages
+outside the configured navigation; strict verification still succeeded. The
+banner is recorded as tool output, not an independently assessed dependency claim.
+`git diff --check` also completed without findings. After recording this evidence,
+strict MkDocs and the diff check must pass again on the final handoff text.
+
+#### Local candidate artifacts
+
+These are local Task 3.1 candidate artifacts, not published Sprint 2 release
+artifacts. They are under the acceptance-report directory's `dist` subdirectory.
+
+| Artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| `agentos_agriflow-0.1.0-py3-none-any.whl` | 34,777 | `39c66114bc38a5b6be85b9eed5e6b857652f91cdf24521a725fa76c726ecf613` |
+| `agentos_agriflow-0.1.0.tar.gz` | 172,604 | `d0aecf53673a63eeded92e5bc97ca767d0c6b1a68988b85065da7ef32087c6d8` |
+
+#### Verified candidate fingerprints before handoff reconciliation
+
+All nine matched before this documentation-only reconciliation. Only
+`docs/handoff/STATUS.md` and `docs/handoff/TASKS.md` are authorized to change
+during reconciliation; the following hashes for those two files identify the
+earlier GUI-verified candidate, not the final handoff text. Final handoff hashes
+are reported separately after editing, avoiding a self-referential hash.
+
+| Path | Pre-reconciliation SHA-256 |
+| --- | --- |
+| `docs/api/agentos.md` | `092adfb005a673ac77b30c7bdd4209dacf4b8759f0274ffa9f9a548836eab8d3` |
+| `docs/architecture/overview.md` | `14ec8f029f7a0e2ceed242389bef749575e07dc32473f95982fdd79386d07978` |
+| `docs/handoff/STATUS.md` | `2f017729c69ff8d92ff8ef3951b1247eaa11ced43f670dd80bb4e1dbb053899e` |
+| `docs/handoff/TASKS.md` | `326b217ee927bb83af1fc457054dd06f2917415f87a395b4fbd69e2b79c7f5b3` |
+| `src/agentos/base/__init__.py` | `9ebb04c780a60cf34d5715a47a3e2e96763071765684796847837f842d590f8d` |
+| `src/agentos/base/exceptions.py` | `0d8a00692c8cbfeb7a07f8721d823e34f10e5805790bb94a6bc64bcfaf0553d2` |
+| `src/agentos/workflows/__init__.py` | `35cde98ee0b46f28ea21f70c229dedb08c49c7e4ee986b41b6e0dc19b2f428a0` |
+| `src/agentos/workflows/graph.py` | `c342bee9abc9d157e62310191b67feaf2edd18b5769e1a3ed86ea30170c79bf5` |
+| `tests/unit/workflows/test_graph.py` | `f766b0ecfbd0e3725c55702ad4129d5e4cf0288dfdcffa0243891c049762f9e9` |
+
+#### Warnings, limitations, and remaining gate
+
+- The default uv cache produced an initialization error in restricted execution.
+  Elevated metadata inspection found an ordinary directory; the exact root cause
+  remains unconfirmed. The alternative cache is process-local; no default-cache
+  deletion or permission repair was performed.
+- `site/` contains 60 acknowledged generated MkDocs output files. It is explicitly
+  excluded from any eventual Task 3.1 commit and is left untouched. Documentation
+  verification during reconciliation must use a temporary output directory.
+- Earlier Debian dependency/download failures are retained above. Missing raw GUI
+  logs limit reconstruction of exact commands and warnings; no claim of a
+  warning-free build is made.
+- Graph construction validates plain string IDs and exact node/tuple shapes.
+  `NodeId` is a static type, not a distinct runtime wrapper. Graphs are immutable
+  through supported public operations; deliberate low-level frozen-dataclass
+  bypasses are outside that guarantee. Cycle diagnostics expose no cycle path.
+- Review found no blocking graph correctness or compatibility defect. Additional
+  tests for malicious subclasses/custom sequences and cross-module static typing
+  examples would strengthen coverage; 100% reported module coverage does not
+  prove every possible runtime input.
+- Sprint 2 runtime, lifecycle, event-delivery, and service-container limitations
+  remain as documented above. This task adds topology validation only.
+- Other documents (including the draft Sprint 3 plan and AGENTS checkpoint) retain
+  historical planning language; they were outside this reconciliation's edit
+  authorization. This current checkpoint governs Task 3.1 status.
+- The historical “Sprint 3 proposed only” statement in the Task 2.13 closure above
+  describes that checkpoint. Task 3.1 now has separate authorization and evidence;
+  this does not authorize Task 3.2 or any release.
+- Final handoff diff review and explicit staging/commit authorization remain
+  required. Nothing has been staged or committed; HEAD remains the baseline.

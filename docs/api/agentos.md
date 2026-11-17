@@ -158,6 +158,52 @@ container bindings.
 
 ::: agentos.models
 
+### Workflow graph declarations
+
+`agentos.workflows.WorkflowGraph` validates an ordered, nonempty sequence of
+`WorkflowNodeSpec` declarations. A `NodeId` is a string-backed static type.
+Use plain, nonblank strings for IDs. Each ID is local to its graph, case-sensitive,
+and preserved exactly. Each declaration has a `depends_on` tuple of direct
+predecessors, which may be declared later in the sequence.
+
+```python
+from agentos.workflows import NodeId, WorkflowGraph, WorkflowNodeSpec
+
+weather = NodeId("weather")
+soil = NodeId("soil")
+advisory = NodeId("advisory")
+graph = WorkflowGraph(
+    nodes=(
+        WorkflowNodeSpec(advisory, depends_on=(weather, soil)),
+        WorkflowNodeSpec(weather),
+        WorkflowNodeSpec(soil),
+    ),
+)
+
+assert graph.topological_order() == (weather, soil, advisory)
+assert graph.nodes[advisory].depends_on == (weather, soil)
+```
+
+`graph.nodes` is a read-only mapping in declaration order. Unknown IDs raise
+`KeyError` through mapping lookup. `graph.edges` is a tuple of `WorkflowEdge`
+values, identified by their `(prerequisite, dependent)` pair. Edges are listed
+in dependent declaration order, then in that node's dependency declaration
+order. Nodes, dependencies, edges, and the precomputed order are immutable.
+Build a new graph to change its topology.
+
+When several nodes are ready, `topological_order()` places the earliest
+declared node next, including newly ready nodes. Singleton, disconnected,
+and isolated nodes are supported. Construction checks input shape, graph
+emptiness, node declarations and IDs in node order, then dependency shape,
+IDs, duplicates, and self-references in declaration order. Missing references
+are checked next, then cycles. Invalid topology raises
+`agentos.base.WorkflowGraphError`, a subclass of `WorkflowError`.
+Diagnostics use declaration positions where applicable and omit raw IDs.
+Cycle errors report the presence of a cycle. They provide no cycle path.
+
+The graph models synchronous, in-process topology. Use `SimpleWorkflow`,
+`WorkflowContext`, and `WorkflowStep` for the existing linear runner.
+
 ::: agentos.workflows
 
 ::: agentos.adapters

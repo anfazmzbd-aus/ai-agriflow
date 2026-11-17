@@ -14,6 +14,7 @@ from agentos.base.exceptions import (
     ServiceError,
     ToolError,
     WorkflowError,
+    WorkflowGraphError,
 )
 from agentos.base.lifecycle import LifecycleComponent, LifecycleState
 
@@ -34,4 +35,5 @@ __all__ = [
     "ServiceError",
     "ToolError",
     "WorkflowError",
+    "WorkflowGraphError",
 ]
