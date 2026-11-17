@@ -94,3 +94,28 @@ Singleton creation is lazy and serialized by a per-container reentrant lock;
 transient factories run for each resolution. The container detects recursive
 dependency cycles but does not scan constructors, manage lifecycle, dispose services,
 or integrate with Runtime yet.
+
+## DAG execution contracts (Task 3.2)
+
+`WorkflowRunState[InputT]` owns an independent in-process result store for a
+validated graph. It exposes read-only result snapshots and creates immutable
+`WorkflowNodeContext[InputT]` views of direct prerequisites.
+`WorkflowNodeHandler[InputT, OutputT]` is an asynchronous callable returning the
+existing `ExecutionResult[OutputT]`.
+
+The existing linear `WorkflowContext` carries replacement state between steps.
+Extending it would mix state replacement with graph-scoped result ownership, so
+the DAG view is distinct and does not inherit from or alter that contract. Giving
+handlers the mutable run owner was rejected because it would permit accidental
+overwrites and expose unrelated results.
+
+Graph topology remains Task 3.1. Contexts and retention are Task 3.2. Handler
+binding, scheduling, invocation, and status-based failure policy belong to Task
+3.3; lifecycle admission belongs to Task 3.4. No runtime, manager, agent/tool, or
+vendor adapter dependency enters these contracts.
+
+The owner assumes one coordinator. Structural snapshots do not freeze arbitrary
+payload objects. Inputs and nested values are borrowed immutable-by-convention
+references, and homogeneous run input typing does not establish heterogeneous
+dependency output types. The implementation preserves original outcome identity
+while erasing its output type only at the private storage boundary.

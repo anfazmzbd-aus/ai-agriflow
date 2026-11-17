@@ -83,3 +83,41 @@ retry = ExecutionResult[str].retry("weather provider is temporarily unavailable"
 Successful and partial outcomes carry a value. `has_value` distinguishes a missing
 value from a legitimate `None`. Failed and timed-out outcomes require a non-empty
 error message. Metadata is copied and exposed as a read-only mapping.
+
+## Understand DAG context ownership
+
+**WHY:** node handlers need prerequisite outcomes without receiving a mutable
+global store. **WHAT:** use a run owner for retention, a node context for input,
+and an asynchronous callable returning `ExecutionResult[T]`.
+**HOW:** declare topology first, record outcomes explicitly, and request a view.
+
+**IMPLEMENT:** `examples/workflow_context.py` demonstrates a manual handler call;
+it is not a DAG executor. Run it locally with:
+
+```console
+uv run --locked --no-sync python -m examples.workflow_context
+```
+
+Expected output is `reference: 7`. It uses no external services.
+`record_result` preserves the outcome object, and `context_for` filters results
+to direct dependencies in their declared order. The example narrows an
+`object` value with `isinstance` before consuming it.
+
+**TEST:** focused workflow tests check isolated stores, snapshots, all six statuses,
+None values, direct visibility, safe diagnostics, and exception propagation.
+Static contract tests assert both accepted handlers and exact expected MyPy
+rejections. Full repository coverage must remain at least 80%.
+
+**EXPLAIN THE CODE:** frozen context fields and read-only maps protect structure.
+They do not deep-copy nested payloads. Use `has_value` to distinguish absent
+values from `ExecutionResult[None].success(None)`. A RETRY outcome is retained
+without causing a retry. Ordinary exceptions and cancellation are not normalized.
+
+**EXERCISE (optional, not a production change):** make the recorded root outcome
+a successful None and adapt the example to report it without treating it as a
+missing result. Then demonstrate how a shared list can still change inside a
+read-only snapshot.
+
+**INTERVIEW QUESTIONS:** Why does a node ID not prove its output type? Why should
+result storage avoid deciding which status makes another node runnable? Why can
+printing a full exception chain disclose information despite a safe outer message?

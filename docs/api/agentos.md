@@ -291,3 +291,70 @@ attempts `stop()` and records the manager as `FAILED`.
 The manager does not create services, emit events, manage Runtime, or drain in-flight
 agent executions. As with `BaseAgent`, an execution already admitted may finish after
 manager shutdown completes.
+
+### DAG node contexts and retained results (Task 3.2)
+
+The linear `WorkflowContext` and `WorkflowStepHandler` remain unchanged.
+DAG handlers use a separate `WorkflowNodeContext[InputT]`, created by a
+`WorkflowRunState[InputT]`. The run owner retains outcomes; a node view exposes
+only its direct prerequisites. These types do not schedule or execute nodes.
+
+Public exports from `agentos.workflows`:
+
+```python
+WorkflowNodeContext(node_id, input_data, dependency_results)
+WorkflowRunState(graph, input_data=input_data)
+# WorkflowNodeHandler[InputT, OutputT] is:
+# Callable[[WorkflowNodeContext[InputT]], Awaitable[ExecutionResult[OutputT]]]
+```
+
+- `context.node_id: NodeId` and `context.input_data: InputT` are frozen fields.
+- `context.dependency_results: Mapping[NodeId, ExecutionResult[object]]` is a
+  copied, read-only snapshot. `dependency_result(node_id)` returns one visible
+  outcome with safe diagnostics when it is unavailable.
+- `run.record_result(node_id, result: ExecutionResult[OutputT]) -> None` records
+  an existing graph node exactly once, retaining the original result identity.
+- `run.result_for(node_id) -> ExecutionResult[object]` returns a retained outcome.
+- `run.results` returns a fresh read-only snapshot, independent of later records.
+- `run.context_for(node_id) -> WorkflowNodeContext[InputT]` requires every direct
+  dependency result and preserves the declared dependency order. It excludes
+  transitive and unrelated results. Root contexts have an empty dependency map.
+
+A direct context constructor validates IDs and mapping shape, but has no graph
+against which to check dependency membership. Use `context_for` for graph-scoped
+views. All reference-taking helpers reject malformed or unknown IDs without
+including those values in diagnostic messages. Invalid context/run operations use
+the existing `WorkflowError` hierarchy. Duplicate records do not replace outcomes.
+
+Every run owns a separate result dictionary and can share the same immutable graph.
+The owner is intended for a single coordinator, without concurrent writers. Contexts
+have no supported route to mutate the owner's store. Mapping copies are shallow:
+input objects, result values, and nested metadata remain shared references. Treat
+them as immutable while in use; provide separate mutable inputs for separate runs
+when needed. No deep copy, persistence, eviction, or retry replacement is provided.
+
+Dependency outputs are heterogeneous, so lookups expose `object`; narrow the value
+explicitly. No typed lookup claims that a string ID proves the output type. Internal
+storage uses one documented erasure cast because `ExecutionResult` is invariant.
+
+| Status | Retained contract |
+| --- | --- |
+| SUCCESS | `has_value=True`, including a legitimate `None`; no error |
+| FAILED | No value; required nonblank error |
+| PARTIAL | Value present; optional error |
+| RETRY | No value; optional error; no automatic retry |
+| TIMEOUT | No value; required error; no timeout machinery |
+| CANCELLED | No value; optional error |
+
+Context construction checks result availability, not dependency success. In
+particular, it does not use `is_terminal` to decide execution readiness.
+Handlers must explicitly return an `ExecutionResult`. A raised exception stays an
+exception: these contracts add no invocation wrapper, normalization, retry, or
+cancellation interception. Actual cancellation and process-control exceptions
+propagate. Scheduling and failure policy belong to separately authorized Task 3.3.
+
+Default representations of the new context and owner omit IDs, inputs, outcomes,
+and metadata. Helpers use fixed diagnostic messages. Payloads, caller-supplied
+error strings, raw mapping `KeyError` messages, and full exception tracebacks can
+still expose sensitive data if callers print them. These contracts perform no
+automatic logging or serialization and do not provide a security sandbox.
