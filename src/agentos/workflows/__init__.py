@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from agentos.workflows.context import WorkflowNodeContext, WorkflowNodeHandler, WorkflowRunState
 from agentos.workflows.graph import NodeId, WorkflowEdge, WorkflowGraph, WorkflowNodeSpec
 from agentos.workflows.workflow import (
     SimpleWorkflow,
@@ -14,7 +15,10 @@ __all__ = [
     "WorkflowContext",
     "WorkflowEdge",
     "WorkflowGraph",
+    "WorkflowNodeContext",
+    "WorkflowNodeHandler",
     "WorkflowNodeSpec",
+    "WorkflowRunState",
     "WorkflowStep",
     "WorkflowStepHandler",
 ]

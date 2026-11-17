@@ -914,3 +914,138 @@ are reported separately after editing, avoiding a self-referential hash.
   this does not authorize Task 3.2 or any release.
 - Final handoff diff review and explicit staging/commit authorization remain
   required. Nothing has been staged or committed; HEAD remains the baseline.
+
+## Sprint 3 — Task 3.2 — candidate implementation — 2026-11-17
+
+The owner separately approved Task 3.2 architecture, the exact 14-file manifest,
+implementation, and verification. The candidate is in
+`E:\Projects\ai-agriflow-task-3.2` on `feat/3.2-workflow-context`, based on
+`4dd8bba682a4a6967d87b88ac62de9e73315b7ca`. GitHub main matched that SHA before
+creation. Post-merge Task 3.1 CI run 44008844894 has a successful verify job.
+Task 3.1 is merged; earlier uncommitted/detached-head statements describe its
+historical candidate checkpoints. Task 3.2 implementation approval supersedes
+historical "unauthorized" planning language only for this task. AGENTS.md and the
+draft sprint plan remain untouched.
+
+Implemented WorkflowNodeContext, WorkflowNodeHandler, and WorkflowRunState under
+agentos.workflows. The run owns an independent record-once store; node views expose
+only direct dependencies, with immutable copied mappings. Outcomes retain identity
+and all six ExecutionStatus contracts, including successful None. Heterogeneous
+lookup returns ExecutionResult[object]. One private erasure cast handles the
+existing invariant result generic. Existing graph and linear APIs are unchanged.
+
+No executor, retries, timeout machinery, runtime integration, adapter, dependency,
+or lockfile changes are included. Payload references are shallow and treated as
+immutable by convention. One coordinator owns writes. Fixed helper messages and
+safe representations omit sensitive payloads; caller error strings and full
+tracebacks are not automatically sanitized. Contexts are not a Python sandbox.
+
+### Task 3.2 verification
+
+Verification completed in Windows CPython 3.14.0 with uv 0.9.16. See the
+current command evidence and final review below.
+No commit, push, PR, release change, or Task 3.3 work is authorized.
+
+### Task 3.2 final verification evidence — CODEX GUI EXECUTED
+
+Current Task 3.2 execution: Windows 11, CPython 3.14.0, uv 0.9.16,
+pytest 9.1.1, Ruff 0.16.1, MyPy 1.20.2, MkDocs 1.6.1. Process-local
+UV_CACHE_DIR=E:\Projects.uv-cache-agentos. These are Codex-executed results,
+not user-executed checks or historical Debian results.
+
+Evidence root:
+C:\Users\USER\AppData\Local\Temp\agentos-task32-verify-acaef6aca0d947be950de08ce4741d27.
+run_gate.ps1, individual logs, gate-exits.txt, archive inventories, the isolated
+acceptance script/report, and final fingerprints are retained outside the worktree.
+Coverage, final caches, site output, and package output use that directory.
+Commands below omit only those explicit temporary cache/output paths, preserved
+in the runner and logs. The final fingerprints are external to avoid self-reference.
+
+| Command | Actual exit | Outcome |
+| --- | --- | --- |
+| uv sync --locked --extra dev --python C:\Python314\python.exe | 0 | Final sync audited 83 packages |
+| uv run --locked --no-sync pytest tests/unit/workflows -q --no-cov -o cache_dir=<temporary> | 0 | 60 passed in 8.55s |
+| uv run --locked --no-sync pytest -q -o cache_dir=<temporary> | 0 | 282 passed in 7.22s; 98.02% coverage; unchanged 80% gate |
+| uv run --locked --no-sync ruff check . | 0 | All checks passed |
+| uv run --locked --no-sync ruff format --check . | 0 | 100 files formatted |
+| uv run --locked --no-sync mypy src --cache-dir <temporary> | 0 | 41 source files passed |
+| uv run --locked --no-sync mypy --cache-dir <temporary> | 0 | 44 configured-package source files passed |
+| uv run --locked --no-sync mypy tests/typing/workflows_contracts.py --cache-dir <temporary> | 0 | Positive fixture passed |
+| uv run --locked --no-sync mypy tests/typing/workflows_contracts_invalid.py --cache-dir <temporary> | 1, expected | Nine intentional errors; pytest verifies source file, line, diagnostic code, stderr and exit |
+| uv run --locked --no-sync mkdocs build --strict --site-dir <temporary> | 0 | Evidence-text docs passed; final revision rechecked after recording |
+| git diff --check | 0 | No whitespace errors; final revision rechecked after recording |
+| uv build --offline --python C:\Python314\python.exe --out-dir <temporary>/dist | 0 | Sdist then wheel-from-sdist built; Hatchling 1.33.0 |
+| uv run --locked --no-sync python -m examples.workflow_context | 0 | reference: 7 |
+
+The new context module has 100% statement/branch coverage: 70 statements and
+22 branches. No test skips or weakened assertions were used.
+
+Development findings: initial lint exited 1 for new-file formatting, import,
+docstring and unused-variable findings; these were repaired within the manifest.
+Initial source MyPy exited 1 on invariant ExecutionResult storage. The approved
+private erasure cast fixed it without changing core contracts or claiming typed
+heterogeneous lookup. The first focused run exited 1 (59 passed, one failed):
+the diagnostic parser matched a bracketed type rather than the trailing code.
+It was corrected, then strengthened to require the expected source file.
+Final focused and full runs passed. An evidence-writing attempt failed before any
+write because Windows default decoding was used; explicit UTF-8 fixed that step.
+Final diff review also caught earlier default-decoding round trips in TASKS.md
+and API docs. Their historical text was restored directly from HEAD as UTF-8
+before reapplying only the approved status edits and API addition.
+
+#### Task 3.2 packaging and installed-wheel evidence
+
+The approved cache already contained Hatchling; no backend recovery or dependency
+upgrade was needed. Runtime requirements were exported with
+uv export --locked --offline --no-dev --no-emit-project --format requirements.txt
+--output-file <temporary>/runtime-requirements.txt (exit 0).
+A fresh uv-created Python 3.14.0 environment received hash-verified runtime pins
+via uv pip install --offline --require-hashes, then the wheel via --offline
+--no-deps (all exit 0). Only the candidate wheel was reinstalled after final
+archive regeneration. uv pip check exited 0 with 47 compatible packages.
+
+The isolated python -I acceptance harness exited 0. agentos and apps.agriflow
+resolved from isolated site-packages; all 47 installed versions matched approved
+lock records. Metadata, exports, legitimate None, result identity, independent
+runs, snapshots, direct views, immutable maps, duplicate rejection, a typed
+async handler, and legacy linear behavior passed. agriflow, agriflow health,
+and agriflow --help each exited 0 with empty stderr. No external agricultural
+or paid API was invoked.
+
+| Local artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| agentos_agriflow-0.1.0-py3-none-any.whl | 36,774 | 83b16dad4c5574979d35aa7e3310e229e9fc8da3977fcac3ac1dcdc3dffd0664 |
+| agentos_agriflow-0.1.0.tar.gz | 181,547 | ba73ebbdf931792a6f7333ac5f648a9c9b47c984edcf81e1e6cdcf0a606a1da4 |
+
+Archive checks passed: 51 wheel members, 114 sdist members, typing marker, exact
+candidate context/export bytes, and sdist source/test/example/API/metadata/lock
+comparisons. Generated/cache/credential-pattern exclusions passed. The existing
+sdist policy excludes handoff files, so this evidence-only handoff update does
+not invalidate artifact comparisons. These are local, unpublished artifacts. The sdist was rebuilt and its comparisons
+rerun after the documentation encoding repair; the wheel checksum stayed unchanged.
+
+#### Task 3.2 final review and limits
+
+All changed tracked and untracked files were reviewed for API compatibility,
+snapshot ownership, failure paths, privacy, type erasure, cancellation, tests,
+docs, and 14-file scope. No blocking defect was found. One coordinator owns
+writes. Payload immutability is by convention; no deep copy, persistence,
+eviction, retry replacement, scheduling, timeout machinery, or runtime integration
+is included. Directly constructed contexts validate shape but not graph membership.
+Private Python attributes and hostile custom Mapping implementations are not a
+security sandbox. Caller-supplied errors and full tracebacks can expose data.
+
+Nonfatal output: cross-drive copy fallback, Git LF/CRLF notices, and the Material
+for MkDocs advisory banner plus INFO notices for pages outside nav. The banner
+is tool output, not an independently verified claim. No configuration was weakened.
+The original checkout, Task 3.1 tracked files, and both existing site directories
+are compared against pre-edit SHA-256 snapshots in the final external review.
+No original checkout files or site output were cleaned, reset, stashed, or edited.
+The new worktree has its .venv and initial ignored tool/test caches; final generated
+outputs remain external. Protected source contracts, metadata, lockfile, AGENTS,
+sprint plan, and releases are unchanged.
+
+Task 3.2 is technically verified; evidence-text docs and whitespace checks passed.
+The final revision is rechecked after recording this entry. Explicit staging/commit
+approval is still required. Nothing is staged or committed. Push, PR,
+merge, releases, and Task 3.3 remain unauthorized.
