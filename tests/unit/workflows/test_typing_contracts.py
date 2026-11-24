@@ -9,7 +9,15 @@ import pytest
 from mypy import api
 
 
-@pytest.mark.parametrize("filename", ["workflows_contracts.py", "workflows_contracts_invalid.py"])
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "workflows_contracts.py",
+        "workflows_contracts_invalid.py",
+        "workflow_executor_contracts.py",
+        "workflow_executor_contracts_invalid.py",
+    ],
+)
 def test_public_contracts_with_mypy(filename: str, tmp_path: Path) -> None:
     """Expected static errors must match marked lines and diagnostic codes exactly."""
     tests = Path(__file__).resolve().parents[2]
