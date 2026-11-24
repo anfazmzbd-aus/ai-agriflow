@@ -16,7 +16,8 @@
 | 2.12 | Sprint release | Complete — published and verified | GitHub pre-release v0.1.0, Release ID 443538987; tag target is 073bfb796e473715f1b42f99aa32afe32fdfda1c; workflow 43287980180 passed; two assets SHA-256 verified. See post-release closure in STATUS.md. |
 | 2.13 | Post-release handoff documentation | Complete — PR #9 merged | Main merge commit cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf. |
 | 3.1 | Workflow graph model and validation | Merged via PR #10 | Main merge 4dd8bba682a4a6967d87b88ac62de9e73315b7ca; post-merge CI 44008844894 verify passed. |
-| 3.2 | Workflow execution context and node contract | Technically verified; not staged or committed | Windows: 60 focused / 282 full tests, 98.02% coverage; quality, typing, docs, offline build and installed-wheel acceptance passed. Final review and explicit staging/commit approval required. |
+| 3.2 | Workflow execution context and node contract | Merged via PR #11 | Merge 369d4e81585a7e235da0fbda40a20b50011c049f; post-merge CI 44118220979 passed. |
+| 3.3 | Sequential asynchronous DAG executor | Implemented and technically verified; not staged or committed | Windows: 118 focused / 340 full tests; 98.18% coverage; quality, typing, docs, offline packaging and installed-wheel acceptance passed. Separate staging/commit approval required. |
 
 ## Task 2.9 acceptance criteria
 
@@ -47,7 +48,7 @@ Sprint 2 is administratively closed after publication of the v0.1.0 Alpha GitHub
 
 **Historical checkpoint (2026-11-16):** Task 3.1 received separate architecture and implementation authorization and is implemented and technically verified, pending final diff review and commit authorization. The baseline remains `cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf`, with detached HEAD. The nine-path candidate excludes the known generated `site/` output. Task 3.2 has not started and requires separate authorization. Each numbered task retains its own planning/implementation, verification, and commit gates; Task 3.1 approval does not approve the rest of the draft plan.
 
-## Task 3.2 current checkpoint — 2026-11-17
+## Task 3.2 historical candidate checkpoint — 2026-11-17
 
 Architecture, implementation, and verification were separately approved. The
 candidate is based on Task 3.1 merge 4dd8bba682a4a6967d87b88ac62de9e73315b7ca.
@@ -61,3 +62,17 @@ Verification: the new context module has 100% statement/branch coverage. Positiv
 MyPy passed; nine expected negative errors were verified by the assertion harness.
 See STATUS.md for exact commands, actual exits, earlier findings and repairs,
 packaging checksums, and privacy/concurrency limits. No next task is authorized.
+
+## Task 3.3 current checkpoint — 2026-11-18
+
+The owner approved the architecture and reaffirmed implementation/verification
+authorization. Acceptance requires complete binding preflight, deterministic
+sequential invocation, global fail-fast, snapshot retention, explicit status/error/
+cancellation policy, one active run, typing, and compatibility. Evidence belongs
+in STATUS.md. No staging, commit, push, PR, merge, or Task 3.4 is authorized.
+
+Current verification: 118 focused workflow tests and 340 full tests passed at
+98.18% coverage. Executor module statement/branch coverage is 100%. Static
+positive contracts passed; nine expected negative diagnostics were verified.
+See STATUS.md for commands, actual exits, attempts/repairs, packaging checksums,
+provenance and limits. This does not authorize staging, commit or Task 3.4.

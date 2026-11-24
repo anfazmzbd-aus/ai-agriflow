@@ -119,3 +119,29 @@ payload objects. Inputs and nested values are borrowed immutable-by-convention
 references, and homogeneous run input typing does not establish heterogeneous
 dependency output types. The implementation preserves original outcome identity
 while erasing its output type only at the private storage boundary.
+
+## Sequential DAG execution (Task 3.3)
+
+`WorkflowNodeBinding[InputT]` keeps topology separate from executable handlers.
+Its generic constructor accepts each concrete output type, then privately erases
+it for heterogeneous storage. An ordered binding sequence allows duplicate
+declarations to be rejected rather than silently overwritten by dictionary input.
+
+`SequentialWorkflowExecutor[InputT]` snapshots bindings, consumes the existing
+stable graph order, and creates one independent run store per admitted invocation.
+It awaits each handler directly and stops globally at the first non-success.
+Read-only progress/final snapshots preserve completed results when errors or
+actual cancellation propagate. One active run per executor is enforced without
+queueing callers; separate instances may run concurrently.
+
+A stateless function was rejected because cancellation would otherwise lose
+access to retained outcomes. A separate run-handle/report hierarchy was deferred
+to keep the public interface small. Existing ExecutionResult aggregates as
+SUCCESS when all nodes succeed and PARTIAL when a returned non-success leaves
+outcomes available. Original node outcomes are retained inside the result map.
+Raised errors remain a distinct exception channel with safe chained summaries.
+
+Task 3.1 owns graph validation, Task 3.2 owns context and result storage, and
+Task 3.3 owns invocation and fail-fast policy. Task 3.4 retains Runtime integration;
+Task 3.5 retains Agent/Tool adapters. ComponentManager lifecycle ordering, cleanup,
+and Runtime admission are unchanged. No executor lifecycle ownership is implied.

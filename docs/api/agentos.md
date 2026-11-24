@@ -358,3 +358,79 @@ and metadata. Helpers use fixed diagnostic messages. Payloads, caller-supplied
 error strings, raw mapping `KeyError` messages, and full exception tracebacks can
 still expose sensitive data if callers print them. These contracts perform no
 automatic logging or serialization and do not provide a security sandbox.
+
+### Sequential DAG executor (Task 3.3)
+
+`WorkflowNodeBinding[InputT](node_id, handler)` binds a precise
+`WorkflowNodeHandler[InputT, OutputT]` to one node. The binding is immutable.
+Its generic constructor accepts heterogeneous output types without caller casts;
+only private storage erases them to `object`.
+
+`SequentialWorkflowExecutor[InputT](graph, bindings)` accepts an ordered sequence
+of bindings, snapshots it, and validates the complete set before invoking anything.
+It rejects malformed collections/bindings, duplicate IDs, extra bindings, and
+missing bindings with safe `WorkflowError` diagnostics. The same callable may
+serve different node IDs. IDs retain the graph's exact case-sensitive semantics.
+Preflight checks callability without executing user code; static typing verifies
+the async/result contract, and invocation validates actual awaitability and output.
+
+```python
+async def run(
+    self, input_data: InputT
+) -> ExecutionResult[Mapping[NodeId, ExecutionResult[object]]]: ...
+
+
+@property
+def results(self) -> Mapping[NodeId, ExecutionResult[object]]: ...
+```
+
+Each admitted run creates a fresh `WorkflowRunState`. Nodes execute one at a time
+in `graph.topological_order()`, irrespective of binding order. Global fail-fast
+ensures all previously recorded dependencies have SUCCESS status before another
+node starts. Direct-dependency visibility remains governed by `context_for`.
+
+| Node event | Executor policy |
+| --- | --- |
+| Returned SUCCESS | Retain the original result and continue; successful None is valid |
+| Returned FAILED, TIMEOUT, CANCELLED, PARTIAL or RETRY | Retain the original result; stop all later nodes, including independent nodes |
+| Raised ordinary Exception | Record a synthetic safe FAILED; raise WorkflowError from the original cause |
+| Raised TimeoutError | Record a synthetic safe TIMEOUT; raise chained WorkflowError |
+| Raised asyncio.CancelledError | Record synthetic safe CANCELLED for the attempted node; re-raise unchanged |
+| KeyboardInterrupt, SystemExit or other BaseException | Propagate unchanged; preserve only already recorded outcomes |
+| Invalid awaitable or returned value | Record safe FAILED; raise safe WorkflowError; preserve the cause when one was raised |
+
+All nodes succeeding returns an outer SUCCESS containing the immutable result map.
+A returned non-success produces outer PARTIAL with that map and a fixed safe error
+summary. The stopping node's original status, value, error and identity remain
+inside the map. Outer PARTIAL means incomplete workflow success with outcomes
+available, including when the first node failed. It does not trigger more work.
+No new status hierarchy is introduced, and `is_terminal` never controls iteration.
+Unattempted nodes are absent; there is no invented SKIPPED outcome.
+
+Actual cancellation raises rather than returning a normal report. Returned
+CANCELLED produces a normal PARTIAL report and does not cancel the calling task.
+Raised ordinary errors preserve their original object/traceback through
+`__cause__`; their public summaries omit raw exception text and node IDs.
+No handler wrapper, status behavior, or direct exception propagation contract
+outside this new executor is changed.
+
+`executor.results` exposes a read-only snapshot of active progress or the final
+retained outcomes. Snapshot copies occur on reads and finalization, not after
+every node. A second active or reentrant run is rejected without resetting the
+first. Admission is released in a synchronous finally block on every exit.
+Cancellation before coroutine admission leaves the previous snapshot unchanged.
+The next admitted run starts empty; old snapshots remain valid. Separate executor
+instances may run concurrently, but one instance is not a thread-safe or
+multi-event-loop writer API. Handlers and mutable payloads may still be shared.
+
+Handlers own cleanup using their own finally/context managers. The executor adds
+no rollback, lifecycle hooks, shielding, cancellation suppression, retries,
+timeouts, workers, or Runtime integration. Cancellation is cooperative; blocking
+handler code cannot be preempted. A second cancellation may interrupt handler
+cleanup according to normal asyncio behavior.
+
+Representations of bindings/executors omit IDs, callables, inputs and outcomes.
+Inputs, values and nested metadata remain shallow immutable-by-convention
+references. Explicitly printing raw mappings, caller error strings or complete
+exception chains can still disclose sensitive data. These contracts are not a
+Python security sandbox.

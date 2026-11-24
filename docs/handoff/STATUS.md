@@ -1049,3 +1049,156 @@ Task 3.2 is technically verified; evidence-text docs and whitespace checks passe
 The final revision is rechecked after recording this entry. Explicit staging/commit
 approval is still required. Nothing is staged or committed. Push, PR,
 merge, releases, and Task 3.3 remain unauthorized.
+
+## Sprint 3 — Task 3.3 — implementation candidate — 2026-11-18
+
+The owner approved the executor architecture and explicitly reaffirmed active
+implementation/verification authorization. No additional architecture approval
+was required. This candidate uses E:\Projects\ai-agriflow-task-3.3 on
+feat/3.3-sequential-dag-executor at baseline
+369d4e81585a7e235da0fbda40a20b50011c049f. GitHub main matched that SHA before
+worktree creation; Task 3.2 post-merge CI 44118220979 completed successfully.
+Earlier Task 3.2 statements about no commit/PR/merge authorization are historical.
+
+Scope is exactly the approved 14-file manifest: executor and exports, three
+executor test modules, two typing fixtures and the existing harness, a runnable
+example, API/architecture/tutorial docs, and STATUS/TASKS. Graph, context, core
+outcomes, Runtime, ComponentManager, Agent/Tool implementations, adapters,
+dependency metadata/lock, AGENTS and the draft plan remain unchanged.
+
+Implemented immutable typed WorkflowNodeBinding and SequentialWorkflowExecutor.
+Complete preflight rejects missing/duplicate/extra/invalid bindings. Each run has
+a fresh store; stable graph order and global fail-fast preserve original results,
+successful None, all six statuses and direct-dependency views. Normal incomplete
+runs return outer PARTIAL with a snapshot. Ordinary failures preserve causes;
+actual cancellation propagates; controls retain completed predecessors.
+One active run is admitted per instance, with snapshots available after every exit.
+There is no scheduling parallelism, retry loop, timeout, rollback, lifecycle
+integration, persistence or vendor dependency.
+
+Verification evidence and final candidate review follow below. Staging, commit, push, PR, merge and Task 3.4 are not authorized.
+
+### Task 3.3 verification evidence — CODEX EXECUTED
+
+Current candidate checks ran on Windows CPython 3.14.0 with uv 0.9.16,
+pytest 9.1.1, Ruff 0.16.1, MyPy 1.20.2 and MkDocs 1.6.1.
+Process-local UV_CACHE_DIR=E:\Projects.uv-cache-agentos; no dependency constraints,
+lock records, coverage settings or quality gates were changed.
+These results are Task 3.3 Codex-executed local evidence, not user-executed
+checks or GitHub Actions results. Baseline post-merge CI success is separate.
+No Task 3.3 push or CI run has been authorized.
+
+Evidence root: C:\Users\USER\AppData\Local\Temp\agentos-task33-verify-5cebf0e0258d4ec899bc0172f429e852.
+The runner, command logs and exit history, archive inventories, acceptance script/
+report, final candidate diff and SHA-256 manifest are external to the worktree.
+Final pytest/coverage, tool caches, MkDocs site and distributions use this root.
+Exact temporary-path arguments are preserved in run_gate.ps1 and individual logs.
+
+| Command | Actual exit | Current result |
+| --- | --- | --- |
+| uv sync --locked --extra dev --python C:\Python314\python.exe | 0 | 83 packages audited |
+| uv run --locked --no-sync pytest tests/unit/workflows -q --no-cov -o cache_dir=<temporary> | 0 | 118 passed in 13.09s |
+| uv run --locked --no-sync pytest -q -o cache_dir=<temporary> | 0 | 340 passed in 24.75s; 98.18% coverage, above unchanged 80% gate |
+| uv run --locked --no-sync ruff check . | 0 | All checks passed |
+| uv run --locked --no-sync ruff format --check . | 0 | 107 files already formatted |
+| uv run --locked --no-sync mypy src --cache-dir <temporary> | 0 | 42 source files passed |
+| uv run --locked --no-sync mypy --cache-dir <temporary> | 0 | 45 configured-package source files passed |
+| uv run --locked --no-sync mypy tests/typing/workflow_executor_contracts.py --cache-dir <temporary> | 0 | Concrete heterogeneous outputs, None, awaitable factories and callable objects passed |
+| uv run --locked --no-sync mypy tests/typing/workflow_executor_contracts_invalid.py --cache-dir <temporary> | 1, expected | Nine intended diagnostics; exact file/line/code/stderr/exit assertion harness passed |
+| uv run --locked --no-sync mkdocs build --strict --site-dir <temporary> | 0 | Candidate docs passed; final evidence text checked separately after recording |
+| git diff --check | 0 | No whitespace errors; repeated after final evidence recording |
+| uv build --offline --python C:\Python314\python.exe --out-dir <temporary>/dist | 0 | Fresh sdist then wheel from sdist; Hatchling 1.33.0 |
+| uv run --locked --no-sync python -m examples.sequential_workflow | 0 | reference result: 14 |
+
+The executor module has 100% statement and branch coverage: 91 statements,
+28 branches. The full suite includes existing graph/context/linear, runtime,
+manager, agent/tool and integration regressions. No test skip, xfail, coverage
+reduction, weakened assertion, or suppression of unexpected typing errors was
+introduced. The old Task 3.2 typing fixtures remain covered by the expanded harness.
+
+#### Development attempts and repairs
+
+- The first combined source-writing command could not start because it exceeded
+  Windows command length. No file was written by that attempt; smaller writes
+  completed within the approved manifest.
+- Initial lint found new-file import, formatting and pytest-style findings.
+  They were fixed without changing behavioral assertions.
+- Initial source MyPy exited 1 with four unreachable diagnostics: typed collection
+  shape checks and a defensive returned-result check. An object-typed collection
+  predicate and an object-typed invocation result retained runtime validation
+  while satisfying strict MyPy. The generic binding constructor itself passed.
+- A formatting gate exited 1 for spacing inside the new API Markdown code block.
+  Formatting that approved doc file fixed it; the final gate exited 0.
+- The initial temporary installed-wheel harness exited 1 because its import list
+  omitted WorkflowNodeSpec. Fixing that harness import produced a passing run.
+  No production behavior or check was weakened.
+- Earlier 117/339 test counts were intermediate runs before the additional
+  ordinary-exception recovery regression. Only the final 118/340 counts above
+  describe the completed candidate test inventory.
+
+#### Offline artifacts and installed-wheel acceptance
+
+uv export --locked --offline --no-dev --no-emit-project --format requirements.txt
+--output-file <temporary>/runtime-requirements.txt exited 0.
+A fresh uv venv using C:\Python314\python.exe was created outside the checkout.
+uv pip install --offline --require-hashes installed the exact exported runtime
+pins, and uv pip install --offline --no-deps installed the candidate wheel.
+Each command exited 0. uv pip check exited 0: all 47 packages compatible.
+
+The isolated Python -I acceptance harness exited 0. Imports came from wheel-env
+site-packages, distribution version was 0.1.0 with Python >=3.13, and all 47
+installed distribution versions matched approved lock records. New exports,
+heterogeneous typed bindings, deterministic order, successful None and identity,
+snapshot lifetime/reuse, global fail-fast/RETRY, chained errors, overlapping-call
+rejection, actual cancellation/handler cleanup and legacy linear execution passed.
+agriflow, agriflow health and agriflow --help each exited 0 with empty stderr.
+No agricultural or paid API was invoked.
+
+| Local Task 3.3 artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| agentos_agriflow-0.1.0-py3-none-any.whl | 39,239 | b29210d7ffc0e1dc59521bfa87d1d5925ef392f2ff5ba2027487543fdc6e7afd |
+| agentos_agriflow-0.1.0.tar.gz | 192,238 | 0636af932547667caced65cc322c92124fec3c13b057212004beabb83b2e963f |
+
+Archive inspection passed: 52 wheel members and 121 sdist members. Typing marker,
+exact source/export bytes and sdist test/static-fixture/example/API/metadata/lock
+bytes were checked. Generated/cache/credential-pattern exclusions passed.
+Existing sdist policy excludes docs/handoff, so this evidence-only handoff update
+does not change those artifact comparisons. These are unpublished local candidate
+artifacts; no release asset was replaced.
+
+#### Review, integrity and limits
+
+The candidate was reviewed for exact API scope, type erasure, runtime validation,
+fail-fast/readiness invariants, outcome identity, snapshot ownership, admission,
+exceptions/cancellation, privacy, tests, documentation and packaging. Only two
+public exports are added. No blocking defect was identified.
+
+ExecutionResult invariance is handled only at private erasure boundaries; no
+caller Any or unchecked typed output lookup is introduced. Contexts expose direct
+dependencies, and global fail-fast ensures every prerequisite is SUCCESS before
+a dependent starts. Returned non-success outcomes are preserved, with outer
+PARTIAL carrying the map. Actual cancellation propagates after recording a safe
+CANCELLED outcome. Controls propagate with their completed prefix. Admission is
+released in finally and old snapshots survive later runs.
+
+Limits remain explicit: one coordinator/event-loop domain per executor, shallow
+immutable-by-convention payloads, shared handler state, cooperative cancellation,
+handler-owned cleanup, and no rollback/retry/implicit timeout/runtime integration.
+Raw payloads or full exception chains may expose data if explicitly rendered.
+Preflight cannot prove a callable's runtime return type without invocation.
+Python 3.13 runtime execution and Task 3.3 CI have not been performed here;
+current local execution covers Python 3.14, while MyPy targets Python 3.13.
+
+Nonfatal output included cross-drive copy fallback, Git LF/CRLF notices, and the
+Material for MkDocs advisory banner plus INFO notices for pages outside nav.
+The advisory is recorded as tool output, not an independently assessed claim.
+Final build/site/log outputs are external; the new worktree retains its uv
+environment and initial ignored tool caches. Final fingerprints are reported
+externally to avoid a self-referential STATUS hash. Protected original/Task 3.1/
+Task 3.2 tracked files and existing site output are checked against 519 pre-edit
+SHA-256 fingerprints in the external review report.
+
+This is a technically verified implementation candidate, not a new architecture
+approval request. Nothing is staged or committed. Final staging/diff review and
+commit require explicit owner approval. No push, PR, merge, release action or
+Task 3.4 work is authorized.

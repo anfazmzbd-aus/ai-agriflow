@@ -121,3 +121,41 @@ read-only snapshot.
 **INTERVIEW QUESTIONS:** Why does a node ID not prove its output type? Why should
 result storage avoid deciding which status makes another node runnable? Why can
 printing a full exception chain disclose information despite a safe outer message?
+
+## Run a sequential DAG
+
+**WHY:** graph order alone does not invoke handlers or define failure behavior.
+**WHAT:** bind typed handlers to graph IDs and run a SequentialWorkflowExecutor.
+**HOW:** use one binding per node; handler return values use ExecutionResult[T].
+
+**IMPLEMENT:** the deterministic example uses no paid or agricultural API:
+
+```console
+uv run --locked --no-sync python -m examples.sequential_workflow
+```
+
+Expected output: `reference result: 14`. The graph declares the reporting node
+before collection, but its dependency puts collection first. The example binds
+integer and string outputs without caller casts and narrows the dependency value
+before consuming it.
+
+**TEST:** executor tests cover complete preflight, stable order, all six outcomes,
+global fail-fast, exception causes, actual versus returned cancellation, cleanup,
+repeated runs, admission, privacy and old API compatibility. Static fixtures check
+both valid heterogeneous bindings and exact expected rejection diagnostics.
+
+**EXPLAIN THE CODE:** run creates a fresh store and awaits handlers in cached
+topological order. Only SUCCESS continues. A returned non-success produces an
+outer PARTIAL containing the retained map; the node's original outcome remains
+intact. Raised errors use safe WorkflowError summaries with original causes.
+Actual cancellation propagates and leaves progress accessible via executor.results.
+Nested payloads are still shared, and handlers own resource cleanup.
+
+**EXERCISE (optional, not a required production change):** make the first handler
+return RETRY and predict the calls/result map. Then compare returning CANCELLED
+with cancelling a task blocked inside a handler. Retain a snapshot before a
+second run and confirm it does not change.
+
+**INTERVIEW QUESTIONS:** Why is a binding sequence preferable for detecting
+duplicates? Why does outer PARTIAL preserve outcomes that outer FAILED cannot?
+Why must a rejected concurrent call leave the first run's store untouched?
