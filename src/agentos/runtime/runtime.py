@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import cast
 
 from agentos.base.exceptions import AgentOSRuntimeError, ServiceError
 from agentos.base.lifecycle import LifecycleComponent, LifecycleState
 from agentos.container import ServiceContainer
+from agentos.core import ExecutionResult
 from agentos.core.config import AgentOSSettings
 from agentos.core.logging import configure_logging
 from agentos.events import EventBus
 from agentos.manager import ComponentManager
 from agentos.registry import Registry
 from agentos.telemetry import InMemoryTelemetrySink, TelemetryEvent
+from agentos.workflows import NodeId, SequentialWorkflowExecutor
 
 
 @dataclass(slots=True)
@@ -31,6 +33,8 @@ class Runtime:
     _lifecycle_lock: asyncio.Lock = field(default_factory=asyncio.Lock, init=False, repr=False)
     _lifecycle_owner: asyncio.Task[object] | None = field(default=None, init=False, repr=False)
     _managed_lifecycle_requested: bool = field(default=False, init=False, repr=False)
+
+    _workflow_active: bool = field(default=False, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         """Bind core Runtime objects without replacing existing registrations."""
@@ -104,6 +108,8 @@ class Runtime:
         """Stop managed components and report successful shutdown."""
         self._managed_lifecycle_requested = True
         async with self._operation("stop"):
+            if self._workflow_active:
+                raise AgentOSRuntimeError("Runtime cannot stop while a managed workflow is active")
             previous = self.state
             try:
                 await self.component_manager.stop()
@@ -113,6 +119,31 @@ class Runtime:
                 raise
             if previous is not LifecycleState.STOPPED and self.state is LifecycleState.STOPPED:
                 self._emit_lifecycle_event("runtime.stopped")
+
+    async def run_workflow[InputT](
+        self,
+        executor: SequentialWorkflowExecutor[InputT],
+        input_data: InputT,
+    ) -> ExecutionResult[Mapping[NodeId, ExecutionResult[object]]]:
+        """Run one workflow while preventing managed shutdown on this Runtime.
+
+        Admission is synchronous within one event loop. The executor owns results
+        and exceptions; no lifecycle lock is held while awaiting its run. Direct
+        manager calls and managers shared across Runtimes bypass this guard.
+        """
+        if self.state is not LifecycleState.STARTED:
+            raise AgentOSRuntimeError("Runtime workflow execution requires STARTED state")
+        if self._lifecycle_lock.locked():
+            raise AgentOSRuntimeError(
+                "Runtime workflow execution is unavailable during lifecycle operations"
+            )
+        if self._workflow_active:
+            raise AgentOSRuntimeError("Runtime already has an active workflow")
+        self._workflow_active = True
+        try:
+            return await executor.run(input_data)
+        finally:
+            self._workflow_active = False
 
     @classmethod
     def from_settings(cls, settings: AgentOSSettings | None = None) -> Runtime:

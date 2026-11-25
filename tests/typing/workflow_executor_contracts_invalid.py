@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from agentos.core import ExecutionResult
+from agentos.runtime import Runtime
 from agentos.workflows import (
     NodeId,
     SequentialWorkflowExecutor,
@@ -47,3 +48,10 @@ async def invalid_operations(
 def mismatched_binding(graph: WorkflowGraph, binding: WorkflowNodeBinding[str]) -> None:
     """Reject bindings with a different executor input type."""
     SequentialWorkflowExecutor[int](graph, [binding])  # reject: list-item
+
+
+async def incompatible_runtime_input(
+    runtime: Runtime, executor: SequentialWorkflowExecutor[int]
+) -> None:
+    """Reject managed input incompatible with the executor's input type."""
+    await runtime.run_workflow(executor, "incorrect")  # reject: misc

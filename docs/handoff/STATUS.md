@@ -1202,3 +1202,140 @@ This is a technically verified implementation candidate, not a new architecture
 approval request. Nothing is staged or committed. Final staging/diff review and
 commit require explicit owner approval. No push, PR, merge, release action or
 Task 3.4 work is authorized.
+
+## Sprint 3 — Task 3.3 closure and Task 3.4 candidate — 2026-11-25
+
+Task 3.3 is merged through PR #12 at f05ee29b7b7496b19f0565e894fb7d04ab8c227d,
+with parents 369d4e81585a7e235da0fbda40a20b50011c049f and
+6a7ced330f876afd3228fd3328a1d746e3d54978. Post-merge CI 45447782233 succeeded.
+Its earlier candidate/staging/commit restrictions above are historical checkpoints.
+The owner reports baseline CI at 340 tests / 98.18% coverage on Python 3.13;
+Task 3.4 Windows execution evidence is recorded separately below.
+
+The owner approved Task 3.4 architecture, implementation and local verification
+in an isolated worktree. Remote main was checked directly with GitHub at the
+exact approved SHA before editing. Only that absent Git commit was fetched.
+Worktree: E:\Projects\ai-agriflow-task-3.4.
+Branch: feat/3.4-runtime-managed-workflow-execution.
+Only production change: src/agentos/runtime/runtime.py.
+
+Contract: run_workflow admits only STARTED, idle lifecycle lock and no active
+managed workflow; synchronous checks and admission precede direct delegation.
+A private flag is excluded from constructor/repr/equality and cleared in finally.
+Stop checks the flag inside its lifecycle lock before teardown or telemetry.
+Reports, result ownership, error causes, cancellation and process controls remain
+the executor's contracts. Workflows do not change lifecycle state or telemetry.
+
+Same-Runtime, single-event-loop shutdown safety excludes direct manager calls,
+shared managers and standalone executor/agent execution. No background tasks,
+draining, cancellation policy, retry/timeout scheduler, adapters, registration,
+lookup, dependency or deployment changes are included. Task 3.5 is unauthorized.
+
+Scope: Runtime, one new test module, two existing typing fixtures, the existing
+DAG example, API/architecture/tutorial docs, STATUS and TASKS (10 candidate paths).
+Local verification passed; the final candidate is at the unstaged review gate.
+No staging, commit, push, PR, merge, or release changes are authorized.
+
+### Task 3.4 local verification — Codex executed, 2026-11-25
+
+Windows CPython 3.14.0 (C:\Python314\python.exe), uv 0.9.16.
+The selected interpreter was verified through uv run. UV_CACHE_DIR was
+process-local at E:\Projects.uv-cache-agentos. Existing dependency constraints,
+uv.lock, quality configuration and the 80% threshold were preserved.
+No network/paid agricultural API was called.
+
+Evidence directory: C:\Users\USER\AppData\Local\Temp\agentos-task34-verify-1795580451431.
+run_gate.ps1 contains exact commands and temporary-output paths.
+gate-exits.jsonl retains each attempt's command, timestamp and actual exit.
+Tests, coverage, type caches, logs, site and dist outputs are isolated there;
+the worktree also has its ignored .venv. Nothing is staged or committed.
+
+| Command (temporary output paths abbreviated) | Exit | Result |
+| --- | --- | --- |
+| uv sync --locked --extra dev --python 3.14.0 | 0 | 83 packages resolved/installed; Python 3.14.0 selected |
+| uv run --locked --no-sync python --version | 0 | Python 3.14.0 |
+| uv run --locked --no-sync pytest -q --no-cov tests/unit/runtime tests/unit/manager tests/unit/base/test_lifecycle.py tests/unit/workflows | 0 | 232 passed in 21.04s |
+| uv run --locked --no-sync pytest -q | 0 | 371 passed in 22.69s; 98.21% coverage |
+| uv run --locked --no-sync ruff check . | 0 | All checks passed |
+| uv run --locked --no-sync ruff format --check . | 0 | 108 files already formatted |
+| uv run --locked --no-sync mypy src | 0 | 42 source files passed |
+| uv run --locked --no-sync mypy | 0 | 45 configured-package source files passed |
+| uv run --locked --no-sync mypy tests/typing/workflow_executor_contracts.py | 0 | Exact managed aggregate type asserted |
+| uv run --locked --no-sync mypy tests/typing/workflow_executor_contracts_invalid.py | 1, expected | Ten exact diagnostics: nine existing plus managed input incompatibility |
+| uv run --locked --no-sync mkdocs build --strict --site-dir <evidence>/site | 0 | Strict documentation build passed |
+| uv build --out-dir <evidence>/dist | 0 | Fresh sdist and wheel built with Hatchling 1.33.0 |
+| uv run --locked --no-sync python -m examples.sequential_workflow | 0 | reference result: 14 through managed Runtime |
+| git diff --check | 0 | No whitespace errors |
+
+The unchanged static harness verifies exact file/line/error-code diagnostics,
+stderr and exit status. Its full-suite assertions passed. The new generic call
+rejects incompatible input with MyPy misc ("Cannot infer value of type parameter
+InputT"), rather than arg-type. No diagnostic is ignored or suppressed.
+
+The 31 new runtime tests cover all requested states, both race orderings,
+shutdown rejection before hooks/telemetry, nesting/overlap, independent Runtimes,
+standalone executor admission, identity/snapshot retention, all six statuses,
+exception causes and process controls, actual cancellation, reuse and shutdown.
+Direct and shared-manager bypasses are explicit tested limits, not guarantees.
+
+run_workflow has 100% statement and branch coverage (10 statements, six branches).
+The shutdown guard's branches are covered. Runtime as a whole has 126/126
+statements and 29/30 branches covered (99.36% combined); the sole missing branch
+117 -> 119 belongs to the pre-existing lifecycle-error handler, not new behavior.
+Repository coverage remains above the unchanged 80% threshold. No new skips,
+xfails, test exclusions, dependency changes or weakened assertions were introduced.
+
+#### Attempts, repairs and warnings
+
+Initial lint and formatting checks exited 1 for the new test module's imports,
+raw regex notation, line wrapping and formatting. Imports/regexes were corrected,
+and formatting resolved the remaining long line. Subsequent checks exited 0.
+The new negative-fixture annotation was aligned with the actual generic-inference
+diagnostic; the invalid call remains unchanged and is asserted by the harness.
+No implementation behavior needed repair after the first focused/full test runs.
+
+Locked synchronization and the requested regular build succeeded, so offline
+dependency recovery was not needed. Material for MkDocs printed its existing
+advisory banner and INFO notices for pages outside nav; strict build still exited
+0. Those third-party banner statements were not independently evaluated.
+Git emits LF/CRLF conversion notices; no Git configuration was changed.
+Final documentation/format/whitespace checks are repeated after this evidence entry.
+
+#### Package provenance and remaining limits
+
+| Fresh local artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| agentos_agriflow-0.1.0-py3-none-any.whl | 39,627 | 3e44b6b6d237fcd019510d7efba5c14149c01a8b14647001873a8e109d0ac20e |
+| agentos_agriflow-0.1.0.tar.gz | 197,793 | 379844216afeaec82aaf6a2c28e4e706afcc100af18b25390c1691e33a84965e |
+
+Archive inspection exited 0: 52 wheel members and 122 sdist members. Wheel
+Runtime bytes and typing marker were checked. Sdist bytes for all eight packaged
+candidate paths, metadata and lock matched the working candidate; existing sdist
+policy excludes the two handoff docs. Cache/site/environment exclusions passed.
+uv also produced its auxiliary dist/.gitignore outside the repository.
+These unpublished artifacts belong to Task 3.4. Task 3.3 installed-wheel evidence
+above is historical; no fresh installed-wheel acceptance was run for Task 3.4.
+
+The final review covers direct delegation, atomic admission, same-Runtime shutdown
+ordering, no lifecycle lock held during execution, safe fixed rejection messages,
+finally cleanup on all exception channels, result ownership and compatibility.
+Only runtime.py changes in production; no exports/constructor/core bindings,
+manager/lifecycle/executor/agent contracts, dependency metadata or lock changed.
+No blocking defect was found.
+
+Remaining limits: one Runtime/event loop, shared/direct manager bypass, standalone
+execution bypass, shallow payload immutability, cooperative cancellation and
+handler-owned cleanup. Original causes/tracebacks and explicitly printed payloads
+can disclose data; Runtime adds no automatic workflow diagnostics or telemetry.
+Python 3.13 runtime execution and Task 3.4 GitHub Actions are not locally verified.
+Baseline post-merge CI 45447782233 success was independently rechecked; its
+configured interpreter is Python 3.13, separate from this Python 3.14 candidate.
+
+Protected-worktree review compares all 11 pre-existing worktrees and 1,632 files,
+including original user edits, existing site output and Task 3.1/3.2/3.3 trees.
+Final source fingerprints, candidate diff, archive review and integrity outcomes
+are stored externally to avoid self-referential handoff hashes.
+
+Current gate: implemented and locally verified, pending final unstaged review.
+Stage authorization is required next; commit authorization remains separate.
+No staging, commit, push, PR, merge, release changes or Task 3.5 work occurred.

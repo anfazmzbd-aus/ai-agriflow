@@ -1,10 +1,11 @@
-"""Run a deterministic local DAG without runtime integration or external services."""
+"""Run a deterministic local DAG through managed Runtime lifecycle without external services."""
 
 from __future__ import annotations
 
 import asyncio
 
 from agentos.core import ExecutionResult
+from agentos.runtime import Runtime
 from agentos.workflows import (
     NodeId,
     SequentialWorkflowExecutor,
@@ -41,9 +42,16 @@ async def main() -> None:
             WorkflowNodeBinding[int](REPORT, report),
         ],
     )
-    outcome = await executor.run(7)
-    if outcome.value is not None:
-        print(outcome.value[REPORT].value)
+    runtime = Runtime.from_settings()
+    await runtime.initialize_async()
+    await runtime.start_async()
+    try:
+        # Await completion (including exception/cancellation cleanup) before stop.
+        outcome = await runtime.run_workflow(executor, 7)
+        if outcome.value is not None:
+            print(outcome.value[REPORT].value)
+    finally:
+        await runtime.stop_async()
 
 
 if __name__ == "__main__":

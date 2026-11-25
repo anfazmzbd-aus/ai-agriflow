@@ -17,7 +17,8 @@
 | 2.13 | Post-release handoff documentation | Complete — PR #9 merged | Main merge commit cd9a6c35203bb4c2c7a2dc5d71cacec7a861afcf. |
 | 3.1 | Workflow graph model and validation | Merged via PR #10 | Main merge 4dd8bba682a4a6967d87b88ac62de9e73315b7ca; post-merge CI 44008844894 verify passed. |
 | 3.2 | Workflow execution context and node contract | Merged via PR #11 | Merge 369d4e81585a7e235da0fbda40a20b50011c049f; post-merge CI 44118220979 passed. |
-| 3.3 | Sequential asynchronous DAG executor | Implemented and technically verified; not staged or committed | Windows: 118 focused / 340 full tests; 98.18% coverage; quality, typing, docs, offline packaging and installed-wheel acceptance passed. Separate staging/commit approval required. |
+| 3.3 | Sequential asynchronous DAG executor | Complete — PR #12 merged; post-merge CI passed | Main merge f05ee29b7b7496b19f0565e894fb7d04ab8c227d; CI 45447782233 succeeded. Earlier local candidate evidence remains historical. |
+| 3.4 | Runtime-managed workflow execution | Implemented and locally verified — unstaged review | Windows Python 3.14.0: 232 focused / 371 full tests; 98.21% coverage. Quality, typing, docs and packaging passed. Explicit staging approval required. |
 
 ## Task 2.9 acceptance criteria
 
@@ -63,7 +64,7 @@ MyPy passed; nine expected negative errors were verified by the assertion harnes
 See STATUS.md for exact commands, actual exits, earlier findings and repairs,
 packaging checksums, and privacy/concurrency limits. No next task is authorized.
 
-## Task 3.3 current checkpoint — 2026-11-18
+## Task 3.3 historical candidate checkpoint — 2026-11-18
 
 The owner approved the architecture and reaffirmed implementation/verification
 authorization. Acceptance requires complete binding preflight, deterministic
@@ -76,3 +77,21 @@ Current verification: 118 focused workflow tests and 340 full tests passed at
 positive contracts passed; nine expected negative diagnostics were verified.
 See STATUS.md for commands, actual exits, attempts/repairs, packaging checksums,
 provenance and limits. This does not authorize staging, commit or Task 3.4.
+
+## Task 3.4 current checkpoint — 2026-11-25
+
+Approved baseline: f05ee29b7b7496b19f0565e894fb7d04ab8c227d. The architecture
+and implementation/local verification are approved. Runtime alone changes in
+production: typed direct workflow delegation, synchronous admission, one active
+workflow, and rejection of shutdown before teardown while that workflow is active.
+Race, recovery, typing, example and documentation coverage accompany the change.
+See STATUS.md for actual verification evidence and narrow safety limits.
+Stop at unstaged review; staging/commit/push/PR/merge/releases/Task 3.5 are not
+authorized.
+
+Verification completed: 232 focused tests; 371 full tests at 98.21% coverage
+(unchanged 80% gate). run_workflow statement/branch coverage is 100%. Ruff,
+source/configured MyPy, positive/ten-error negative static contracts, strict
+MkDocs, managed example, package build and whitespace checks passed.
+Exact commands/exits, attempts/repairs, package provenance and limits are in
+STATUS.md. Nothing is staged or committed; request final staging/diff review.

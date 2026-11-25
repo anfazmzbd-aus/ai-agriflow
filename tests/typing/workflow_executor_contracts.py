@@ -6,6 +6,7 @@ from collections.abc import Awaitable, Mapping
 from typing import assert_type
 
 from agentos.core import ExecutionResult
+from agentos.runtime import Runtime
 from agentos.workflows import (
     NodeId,
     SequentialWorkflowExecutor,
@@ -64,3 +65,9 @@ async def check() -> None:
     assert_type(outcome, ExecutionResult[Mapping[NodeId, ExecutionResult[object]]])
     assert_type(executor.results[a], ExecutionResult[object])
     assert_type(executor.results[a].value, object)
+
+
+async def managed_contract(runtime: Runtime, executor: SequentialWorkflowExecutor[int]) -> None:
+    """Preserve the exact aggregate type through Runtime delegation."""
+    outcome = await runtime.run_workflow(executor, 3)
+    assert_type(outcome, ExecutionResult[Mapping[NodeId, ExecutionResult[object]]])

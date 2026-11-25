@@ -434,3 +434,46 @@ Inputs, values and nested metadata remain shallow immutable-by-convention
 references. Explicitly printing raw mappings, caller error strings or complete
 exception chains can still disclose sensitive data. These contracts are not a
 Python security sandbox.
+
+### Runtime-managed workflow execution (Task 3.4)
+
+`Runtime.run_workflow` admits one supplied executor after managed initialization
+and startup. Legacy synchronous `start()` does not establish readiness.
+
+```python
+async def run_workflow[InputT](
+    self,
+    executor: SequentialWorkflowExecutor[InputT],
+    input_data: InputT,
+) -> ExecutionResult[Mapping[NodeId, ExecutionResult[object]]]: ...
+```
+
+Admission requires `state is LifecycleState.STARTED`, an idle Runtime lifecycle
+lock, and no active managed workflow on that Runtime. Checks and admission happen
+without an intervening await on one event loop. Rejected admission raises a fixed
+`AgentOSRuntimeError` without invoking the executor or changing its snapshots.
+Overlapping and nested calls are rejected, even with different executors.
+Independent Runtimes with separate managers and executors may run concurrently.
+
+Runtime directly awaits `executor.run(input_data)` in the caller's task without
+holding its lifecycle lock. It returns the exact SUCCESS or PARTIAL report;
+node result identities, successful None, all statuses and snapshots remain owned
+by the executor. WorkflowError and its original cause, actual CancelledError,
+and process-control exceptions propagate unchanged. Returned CANCELLED remains
+the executor's normal PARTIAL report. Workflow outcomes do not change lifecycle
+state or emit telemetry. Admission is cleared in finally on every exit, including
+executor admission errors, so later execution and shutdown can proceed.
+
+`stop_async()` checks for an active managed workflow inside its existing lifecycle
+lock, before ComponentManager teardown or lifecycle telemetry. It rejects active
+work with a fixed AgentOSRuntimeError rather than waiting, cancelling, or draining.
+The caller must settle the workflow, including handler cleanup, then retry stop.
+If shutdown wins admission, its held lifecycle lock rejects new workflow calls
+even while aggregate state still reads STARTED.
+
+The shutdown guarantee applies only to calls through the same Runtime on one
+event loop. Direct ComponentManager lifecycle calls, sharing a manager across
+Runtimes, and standalone executor/agent execution bypass this guard. Public core
+service/manager identity constraints remain in force. This method performs no
+registry lookup, service resolution, registration, background scheduling,
+automatic retry/timeout, rollback, or workflow telemetry.
