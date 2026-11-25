@@ -159,3 +159,50 @@ second run and confirm it does not change.
 **INTERVIEW QUESTIONS:** Why is a binding sequence preferable for detecting
 duplicates? Why does outer PARTIAL preserve outcomes that outer FAILED cannot?
 Why must a rejected concurrent call leave the first run's store untouched?
+
+## Run a workflow through managed Runtime lifecycle
+
+**WHY:** a component must not be torn down during a workflow admitted through its
+Runtime. **WHAT:** use run_workflow for the same deterministic DAG example above.
+**HOW:** initialize and start managed lifecycle, await the run, then stop.
+
+**IMPLEMENT:** examples.sequential_workflow now follows this pattern using its
+existing graph and executor:
+
+```python
+from agentos.runtime import Runtime
+
+runtime = Runtime.from_settings()
+await runtime.initialize_async()
+await runtime.start_async()
+try:
+    outcome = await runtime.run_workflow(executor, 7)
+finally:
+    await runtime.stop_async()
+```
+
+Run `uv run --locked --no-sync python -m examples.sequential_workflow`; the
+reference value remains 14. The example awaits execution before shutdown, so a
+handler error or cancellation propagates through cleanup before stop is called.
+
+If your application creates a task for the run, it owns that task. stop_async
+rejects while it is active: await it to completion, or explicitly cancel and await
+it if your application policy calls for cancellation, then retry shutdown.
+Runtime does not create background tasks, drain work, or cancel handlers for you.
+
+**TEST:** event-barrier regressions cover both shutdown/workflow race orderings,
+nested/overlapping admission, independent Runtimes, retained report identity and
+snapshots, executor admission errors, exception causes and actual cancellation.
+**EXPLAIN THE CODE:** the active flag is set without awaiting, executor.run is
+awaited directly without a lifecycle lock, and finally clears admission.
+Shutdown checks the same flag under its lifecycle lock before teardown.
+
+**EXERCISE (optional):** suspend a handler on an asyncio.Event, call stop_async
+and observe rejection, then release and await the workflow and retry stop.
+**INTERVIEW QUESTIONS:** Why check the lifecycle lock as well as STARTED?
+Why would sharing ComponentManager between Runtimes defeat this guard?
+Why must a cancelled task be awaited before its resources are torn down?
+
+The guarantee covers one Runtime on one event loop. Direct manager calls,
+shared managers and standalone executor/agent execution bypass it. Payload
+immutability remains shallow, cancellation cooperative, and cleanup handler-owned.

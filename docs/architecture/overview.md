@@ -145,3 +145,25 @@ Task 3.1 owns graph validation, Task 3.2 owns context and result storage, and
 Task 3.3 owns invocation and fail-fast policy. Task 3.4 retains Runtime integration;
 Task 3.5 retains Agent/Tool adapters. ComponentManager lifecycle ordering, cleanup,
 and Runtime admission are unchanged. No executor lifecycle ownership is implied.
+
+## Runtime workflow admission (Task 3.4)
+
+Runtime now offers a narrow lifecycle boundary around a supplied
+SequentialWorkflowExecutor. It atomically checks STARTED, lifecycle lock idleness
+and its one private active-workflow flag before directly awaiting the executor.
+The flag is excluded from construction, representation and equality. It is
+cleared in finally; executor contracts and outcome ownership remain unchanged.
+
+Two orderings share this boundary. If workflow admission wins, stop_async acquires
+the lifecycle lock but rejects before teardown or telemetry. If shutdown wins,
+the held lock rejects workflow admission, even before ComponentManager changes
+its aggregate STARTED state. The lifecycle lock is never held across workflow
+execution; callers settle work and retry rejected shutdown rather than relying
+on hidden draining or cancellation.
+
+This is a single-event-loop, same-Runtime guarantee. Direct manager operations,
+manager sharing between Runtimes, and standalone executor/agent execution bypass
+it. Independent Runtimes with separate managers/executors remain concurrent.
+There is no workflow registration, registry/service lookup, queue, background
+task, new status hierarchy, or automatic retry/timeout. Task 3.5 Agent/Tool
+adapters and later scheduling features remain separate tasks.
